@@ -52,10 +52,22 @@ const Cal: FC = () => {
 
   // Handles adding new event to the calendar
   const handleSelectSlot = useCallback(
-    ({ start, end }) => {
+    
+    ({ start, end}) => {
       const title = window.prompt('New Event Name');
+
+    //   Generating an object id as a placeholder before database connection is established
+      function objectId () {
+        return hex(Date.now() / 1000) +
+          ' '.repeat(16).replace(/./g, () => hex(Math.random() * 16))
+      }
+      
+      function hex (value) {
+        return Math.floor(value).toString(16)
+      }
+      const eventId = objectId();
       if (title) {
-        setEvents((prev) => [...prev, { start, end, title }]);
+        setEvents((prev) => [...prev, { start, end, title, eventId }]);
       }
     },
     [setEvents],
