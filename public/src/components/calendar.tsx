@@ -33,7 +33,7 @@ const Cal: FC = () => {
   });
 
   const DnDCalendar = withDragAndDrop(Calendar);
-  const [view, setView] = useState();
+  const [view, setView] = useState(Views.WEEK);
   const [events, setEvents] = useState<Event[]>([
     {
       eventId: 1,
@@ -60,7 +60,10 @@ const Cal: FC = () => {
     },
     [setEvents],
   );
-  //   const onNewEvent = (data) => {};
+
+  // Update View State
+  // Resolves issue with view resetting on component rerender & event creation/updating
+  const onView = useCallback((newView) => setView(newView), [setView]);
 
   // ** CONSIDER REFACTORING - REPETITIVE CODE **
 
@@ -122,6 +125,8 @@ const Cal: FC = () => {
       events={events}
       localizer={localizer}
       onSelectSlot={handleSelectSlot}
+      onView={onView}
+      view={view}
       onEventDrop={onEventDrop}
       onEventResize={onEventResize}
       selectable
