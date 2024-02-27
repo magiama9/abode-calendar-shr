@@ -20,6 +20,12 @@ import { ValidateObjectId } from 'src/shared/validate-object-id.pipes';
 export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
 
+  @Get()
+  async findAll(@Res() res) {
+    const events = await this.eventsService.findAll();
+    return res.status(HttpStatus.OK).json(events);
+  }
+
   @Post()
   async createEvent(@Res() res, @Body() createEventDto: CreateEventDto) {
     const newEvent = await this.eventsService.createEvent(createEventDto);
