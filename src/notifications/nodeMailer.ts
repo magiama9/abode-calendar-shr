@@ -18,7 +18,7 @@ const eventObject = {
   invitees: ['test@test.com', 'test2@test2.com'],
 };
 
-async function main(eventObject) {
+async function main({ eventObject }) {
   // Convert invitees array to string
   const sendToList = eventObject.invitees.join(', ');
 
@@ -41,4 +41,9 @@ async function main(eventObject) {
   // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
 }
 
-main(eventObject).catch(console.error);
+// main({ eventObject }).catch(console.error);
+
+module.exports = {
+  eventObject,
+  main,
+};
