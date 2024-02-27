@@ -1,25 +1,13 @@
-import * as React from 'react';
+import { useState } from 'react';
+import { isBefore, add } from 'date-fns';
 import { ChangeEvent, Dispatch, SetStateAction } from 'react';
 // import Box from '@mui/material/Box';
 // import Button from '@mui/material/Button';
-import {
-  Typography,
-  Modal,
-  TextField,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  Button,
-  Box,
-} from '@mui/material';
+import { Typography, Modal, TextField, Button, Box } from '@mui/material';
 import {
   LocalizationProvider,
-  DateField,
   TimeField,
   DatePicker,
-  DateTimePicker,
 } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
 // import Modal from '@mui/material/Modal';
@@ -39,7 +27,9 @@ const style = {
 };
 
 const formStyle = {
-  width: 200,
+  width: 196,
+  mr: 0.5,
+  mt: 0.5,
 };
 
 interface IProps {
@@ -53,30 +43,96 @@ const NewEventModal = ({
   handleClose,
   eventFormData,
   setEventFormData,
-  onAddEvent
+  onAddEvent,
 }: IProps) => {
   const { description, title, invitees, start, end } = eventFormData;
-  //   const [open, setOpen] = React.useState(false);
-  //   const handleOpen = () => setOpen(true);
-  //   const handleClose = () => setOpen(false);
+
+  // Closes Modal
   const onClose = () => handleClose();
-  const onSave = (event: ChangeEvent<HTMLInputElement>) => {
+
+  // ** CHANGE HANDLERS **
+  // ** CONSIDER REWRITING SO RERENDERS AREN'T HAPPENING ON VALUE CHANGE **
+
+  // Change Handler for form input changing
+  const onChange = (event: ChangeEvent<HTMLInputElement>) => {
     setEventFormData((prevState) => ({
       ...prevState,
       [event.target.name]: event.target.value,
     }));
-    console.log();
   };
 
-  //   const [modalEvent, setModalEvent] = React.useState({
-  //     title: props.event.title,
-  //     description: '',
-  //     invitees: '',
+  // ** TODO: CHANGE THIS **
+  // I should change this so that each invitee is mapped into a new textfield element
+  // with a button to add another invitee and a button to remove each invitee.
+  // This is inelegant and easily breakable, but it works for now.
+
+  // Handles Invitee Change
+  const onInviteeChange = (event: ChangeEvent<HtmlInputElement>) => {
+    const newInviteeArray = event.target.value.split(',');
+    setEventFormData((prevState) => ({
+      ...prevState,
+      invitees: newInviteeArray,
+    }));
+  };
+
+  // ** TODO: Make this work **
+  // const renderInviteeForms = () => {
+  //   eventFormData.invitees.forEach((invitee) => {
+  //     return (
+  //       <div>
+  //         <TextField value={invitee}/>
+  //       </div>
+  //     );
   //   });
+  // };
+
+  // Change Handlers for Time/Date Changing
+  // These probably shouldn't have to be different, but this works
+
+  // Handle Start Time Change
+  const onStartTimeChange = (time: Date) => {
+    // If start time is before end time, store start time
+    // Otherwise we push the end time back 30 minutes from start time
+    if (isBefore(time, end)) {
+      setEventFormData((prevState) => ({
+        ...prevState,
+        start: time,
+      }));
+    } else {
+      // const duration = intervalToDuration({ start: time, end: end });
+      const duration = { minutes: 30 };
+      const endTime = add(time, duration);
+      setEventFormData((prevState) => ({
+        ...prevState,
+        start: time,
+        end: endTime,
+      }));
+    }
+  };
+
+  // Handle End Time Change
+  const onEndTimeChange = (time: Date) => {
+    // If end time is before start time, push start time to 30 minutes before end time
+    // Otherwise we store end time
+    // Has some wacky behavior if you type the end date vs. using the picker
+    // Core functionality of ensuring end time is after start time works fine though
+    if (isBefore(time, start)) {
+      const duration = { minutes: -30 };
+      const startTime = add(time, duration);
+      setEventFormData((prevState) => ({
+        ...prevState,
+        start: startTime,
+        end: time,
+      }));
+    } else
+      setEventFormData((prevState) => ({
+        ...prevState,
+        end: time,
+      }));
+  };
 
   return (
     <div>
-      {/* <Button onClick={handleOpen}>Open modal</Button> */}
       <Modal
         open={open}
         onClose={onClose}
@@ -91,47 +147,85 @@ const NewEventModal = ({
             <LocalizationProvider dateAdapter={AdapterDateFns}>
               <TextField
                 name="title"
-                defaultValue={title}
+                value={title}
                 margin="dense"
                 id="title"
                 label="Title"
                 type="text"
                 fullWidth
                 variant="outlined"
-                // onChange={onChange}
+                onChange={onChange}
               />
-              {/* <DateField
-                name="startDate"
-                value={start}
+              <TextField
+                name="description"
+                value={description}
                 margin="dense"
-                id="startDate"
-                label="startDate"
+                id="description"
+                label="Description"
+                type="text"
                 fullWidth
+                multiline
+                minRows={4}
+                maxRows={10}
                 variant="outlined"
-              /> */}
+                onChange={onChange}
+              />
+              <TextField
+                name="invitees"
+                value={invitees}
+                margin="dense"
+                id="invitees"
+                label="Invitees - Separate by comma"
+                type="text"
+                fullWidth
+                multiline
+                minRows={1}
+                maxRows={10}
+                variant="outlined"
+                onChange={onInviteeChange}
+              />
+              {/* {eventFormData.invitees.map((invitee, i) => {
+                return (
+                  <TextField
+                    name="invitee"
+                    value={invitee}
+                    margin="dense"
+                    id="invitees"
+                    label="Invitee"
+                    type="text"
+                    fullWidth
+                    variant="outlined"
+                    onChange={onChange}
+                  />
+                );
+              })} */}
+
               <TimeField
                 name="startTime"
+                sx={formStyle}
                 value={start}
                 margin="dense"
                 id="startTime"
                 label="Start Time"
-                fullWidth
                 variant="outlined"
+                onChange={onStartTimeChange}
               />
               <TimeField
                 name="endTime"
+                sx={formStyle}
                 value={end}
                 margin="dense"
                 id="endTime"
                 label="End Time"
-                fullWidth
                 variant="outlined"
+                onChange={onEndTimeChange}
               />
               <DatePicker
                 sx={formStyle}
                 name="startDate"
                 value={start}
                 label="Start Date"
+                onChange={onStartTimeChange}
                 // variant="outlined"
               />
               <DatePicker
@@ -139,6 +233,7 @@ const NewEventModal = ({
                 name="endDate"
                 value={end}
                 label="End Date"
+                onChange={onEndTimeChange}
                 // variant="outlined"
               />
               {/* <DateTimePicker
@@ -154,7 +249,7 @@ const NewEventModal = ({
               /> */}
               <p></p>
             </LocalizationProvider>
-            <Button variant="contained" onClick={onSave}>
+            <Button variant="contained" onClick={onAddEvent}>
               Save Event
             </Button>
             <Button color="error">Delete Event</Button>
