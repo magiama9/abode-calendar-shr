@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 const cron = require('node-cron');
 const nodemailer = require('nodemailer');
 
@@ -9,8 +10,8 @@ const transporter = nodemailer.createTransport({
     pass: 't7rcBtyXeNfSZXuXDJ', // GENERATED ETHEREAL PASSWORD
   },
 });
-// async..await is not allowed in global scope, must use a wrapper
 
+// async..await is not allowed in global scope, must use a wrapper
 async function main(eventObject) {
   // Convert invitees array to string
   console.log('running');
@@ -32,18 +33,8 @@ async function main(eventObject) {
   });
 
   console.log('Message sent: %s', info.messageId);
-  // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+  // Example -- Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
 }
-
-async function runMailer() {
-  main(eventObject).catch(console.error);
-}
-// main({ eventObject }).catch(console.error);
-
-// module.exports = {
-//   eventObject,
-//   main,
-// };
 
 const runJob = cron.schedule(
   '*/15 * * * * *',
