@@ -1,9 +1,10 @@
-import { FC, useState, useEffect, useCallback } from 'react';
+import { FC, useState, useEffect, useCallback, Fragment } from 'react';
 import { Calendar, dateFnsLocalizer, Views, Event } from 'react-big-calendar';
 import withDragAndDrop, {
   withDragAndDropProps,
 } from 'react-big-calendar/lib/addons/dragAndDrop';
 import Toolbar from 'react-big-calendar/lib/Toolbar';
+import NewEventModal from './newEventModal';
 import format from 'date-fns/format';
 import parse from 'date-fns/parse';
 import startOfWeek from 'date-fns/startOfWeek';
@@ -12,8 +13,45 @@ import enUS from 'date-fns/locale/en-US';
 import addHours from 'date-fns/addHours';
 import startOfHour from 'date-fns/startOfHour';
 
+import axios from 'axios';
+
+import { createEvent } from '../utils/createEvent';
+import { updateEvent } from '../utils/updateEvent';
+import { getAllEvents } from '../utils/getAllEvents';
+import { getOneEvent } from '../utils/getOneEvent';
+
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import Modal from '@mui/material/Modal';
+
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
+import { create } from 'domain';
+
+import CreateEventModal from './createEventModal';
+import { set } from 'date-fns';
+
+export interface EventFormData {
+  title: string;
+  description: string;
+  start?: Date;
+  end?: Date;
+  eventId?: string;
+  invitees: Array<string>;
+}
+
+export interface IEventInfo extends Event {
+  _id: string;
+  title: string;
+  description: string;
+  start: Date;
+  end: Date;
+  eventId: string;
+  invitees: Array<string>;
+}
+
+const promisedEvents = getAllEvents();
 
 const Cal: FC = () => {
   const locales = {
@@ -34,15 +72,123 @@ const Cal: FC = () => {
 
   const DnDCalendar = withDragAndDrop(Calendar);
   const [view, setView] = useState(Views.WEEK);
-  const [events, setEvents] = useState<Event[]>([
+  const [currentEvent, setCurrentEvent] = useState<Event>({
+    eventId: 1,
+    title: 'Default',
+    start,
+    end,
+  });
+  const [open, setOpen] = useState(false);
+  const [openSlot, setOpenSlot] = useState(false);
+  const [events, setEvents] = useState([
     {
-      eventId: 1,
+      eventId: '65dba47ad6d0d4a0ac0d31b1',
       title: 'Learn cool stuff',
+      description: 'Learning Cool Stuff',
       start,
       end,
+      invitees: [
+        'samrandels@gmail.com',
+        'james@abodehr.com',
+        'tedlasso@richmondafc.com',
+      ],
     },
   ]);
 
+  const initialEventFormState: EventFormData = {
+    title: '',
+    description: '',
+    eventId: undefined,
+    start: undefined,
+    end: undefined,
+    invitees: [],
+  };
+
+  const [eventFormData, setEventFormData] = useState<EventFormData>(
+    initialEventFormState,
+  );
+
+  //   This logic should be in utils, but isn't resolving promise properly in useEffect()
+  //   const getAllEvents = async () => {
+  //     try {
+  //       const response = await axios.get('http://127.0.0.1:5001/events/');
+  //       //   setEvents(prevState);
+  //       console.log(response);
+  //       return response;
+  //     } catch (error) {
+  //       console.log(error);
+  //     }
+  //   };
+  useEffect(() => {
+    // const response = getAllEvents();
+    // response.then(() => console.log(response));
+    promisedEvents.then((results: Event[]) => {
+      console.log(results);
+      //   const dbEvents: Event[] = results.map((result: IEventInfo) => {
+      //     // const newestEvent = Event{result};
+
+      //     setCurrentEvent(result);
+      //     console.log(currentEvent);
+      //     // console.log(newestEvent);
+      //     return {
+      //       eventId: result.id,
+      //       title: result.title,
+      //       descripion: result.description,
+      //       invitees: result.invitees,
+      //       start: result.start,
+      //       end: result.end,
+      //     };
+      //   });
+      //   console.log(typeof dbEvents);
+      //   //   setEvents((prevEvents) => {
+      //   //     [...prevEvents, dbEvents];
+      //   //   });
+      //   //   setEvents((prevState) => [...prevState, dbEvents[0]]);
+      //   console.log(dbEvents[0]);
+    });
+  });
+  const getAllCalenderEvents = () => {
+    const dbEvents = getAllEvents();
+    console.log(dbEvents);
+    // setEvents(dbEvents);
+  };
+  //   Resets Event Form State and closes modal
+  const handleClose = () => {
+    // console.log(eventFormData);
+    setEventFormData(initialEventFormState);
+    setOpenSlot(false);
+  };
+
+  //   Generating an object id as a placeholder before database connection is established
+  const objectId = () => {
+    return (
+      hex(Date.now() / 1000) +
+      ' '.repeat(16).replace(/./g, () => hex(Math.random() * 16))
+    );
+  };
+
+  function hex(value) {
+    return Math.floor(value).toString(16);
+  }
+
+  const onAddEvent = (e: MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+
+    const data: IEventInfo = {
+      ...eventFormData,
+      _id: objectId(),
+      start: currentEvent?.start,
+      end: currentEvent?.end,
+    };
+
+    const newEvents = [...events, data];
+
+    setEvents(newEvents);
+    handleClose();
+  };
+
+  //   This should get us the initial view on render
+  //  Currently unnecessary but also not breaking anything, so...
   const InitialRangeChangeToolbar = (props) => {
     useEffect(() => {
       props.onView(props.view);
@@ -50,28 +196,54 @@ const Cal: FC = () => {
     return <Toolbar {...props} />;
   };
 
-  // Handles adding new event to the calendar
-  const handleSelectSlot = useCallback(
-    
-    ({ start, end}) => {
-      const title = window.prompt('New Event Name');
+  //   Handles selecting event
+  const handleSelectEvent = (event: IEventInfo) => {
+    setOpenSlot(true);
+    // getOneEvent(event.eventId);
+    setEventFormData(event);
+    setCurrentEvent(event);
+  };
+  //   const handleSelectEvent = useCallback((event: Event) => {
+  //     setOpenSlot(true);
+  //     getOneEvent(event.eventId);
 
-    //   Generating an object id as a placeholder before database connection is established
-      function objectId () {
-        return hex(Date.now() / 1000) +
-          ' '.repeat(16).replace(/./g, () => hex(Math.random() * 16))
-      }
-      
-      function hex (value) {
-        return Math.floor(value).toString(16)
-      }
-      const eventId = objectId();
-      if (title) {
-        setEvents((prev) => [...prev, { start, end, title, eventId }]);
-      }
-    },
-    [setEvents],
-  );
+  //     setEventFormData(event);
+
+  //     // window.alert(event.title);
+  //     setCurrentEvent(event);
+  //   }, []);
+
+  const addNewEvent = (e: MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    console.log(eventFormData);
+    // const data = {
+    //   ...eventFormData,
+    //   _id: objectId(),
+    //   start: currentEvent?.start,
+    //   end: currentEvent?.end,
+    // };
+    console.log(currentEvent);
+    // const newEvent = {
+    //   title: eventFormData.title,
+    //   start: event.start,
+    //   end: data.end,
+    //   invitees: data.invitees,
+    // };
+    setEvents((prev) => [...prev, eventFormData]);
+    createEvent(eventFormData);
+    handleClose();
+  };
+  // Handles adding new event to the calendar
+
+  //   Functionality for clicking on the calendar or dragging to create a new event
+  const handleSelectSlot = ({ start, end }) => {
+    setEventFormData((prevState) => ({
+      ...prevState,
+      start: start,
+      end: end,
+    }));
+    setOpenSlot(true);
+  };
 
   // Update View State
   // Resolves issue with view resetting on component rerender & event creation/updating
@@ -91,6 +263,8 @@ const Cal: FC = () => {
       if (e.eventId !== event.eventId) {
         return e;
       } else {
+        console.log(e.eventId);
+        updateEvent({ ...e, start: new Date(start), end: new Date(end) });
         return {
           ...e,
           start: new Date(start),
@@ -131,20 +305,30 @@ const Cal: FC = () => {
   };
 
   return (
-    <DnDCalendar
-      components={{ toolbar: InitialRangeChangeToolbar }}
-      defaultView="week"
-      events={events}
-      localizer={localizer}
-      onSelectSlot={handleSelectSlot}
-      onView={onView}
-      view={view}
-      onEventDrop={onEventDrop}
-      onEventResize={onEventResize}
-      selectable
-      resizable
-      style={{ height: '90vh' }}
-    />
+    <div>
+      <DnDCalendar
+        components={{ toolbar: InitialRangeChangeToolbar }}
+        defaultView="week"
+        events={events}
+        localizer={localizer}
+        onSelectEvent={handleSelectEvent}
+        onSelectSlot={handleSelectSlot}
+        onView={onView}
+        view={view}
+        onEventDrop={onEventDrop}
+        onEventResize={onEventResize}
+        selectable
+        resizable
+        style={{ height: '100vh' }}
+      />
+      <NewEventModal
+        open={openSlot}
+        handleClose={handleClose}
+        eventFormData={eventFormData}
+        setEventFormData={setEventFormData}
+        onAddEvent={addNewEvent}
+      />
+    </div>
   );
 };
 
