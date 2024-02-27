@@ -1,8 +1,5 @@
-import { useState } from 'react';
 import { isBefore, add } from 'date-fns';
-import { ChangeEvent, Dispatch, SetStateAction } from 'react';
-// import Box from '@mui/material/Box';
-// import Button from '@mui/material/Button';
+import { useState, ChangeEvent, Dispatch, SetStateAction } from 'react';
 import { Typography, Modal, TextField, Button, Box } from '@mui/material';
 import {
   LocalizationProvider,
@@ -10,9 +7,10 @@ import {
   DatePicker,
 } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
-// import Modal from '@mui/material/Modal';
-
 import { EventFormData } from './calendar';
+
+// ** Styling **
+// ** This is a wacky, non-responsive, terrible implementation, but it gets the job done for now
 
 const style = {
   position: 'absolute' as 'absolute',
@@ -47,6 +45,16 @@ const NewEventModal = ({
 }: IProps) => {
   const { description, title, invitees, start, end } = eventFormData;
 
+  const initialEventFormState: EventFormData = {
+    title: '',
+    description: '',
+    eventId: undefined,
+    start: undefined,
+    end: undefined,
+    invitees: [],
+  };
+
+  const [currentEvent, setCurrentEvent] = useState(eventFormData);
   // Closes Modal
   const onClose = () => handleClose();
 
@@ -55,10 +63,14 @@ const NewEventModal = ({
 
   // Change Handler for form input changing
   const onChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setEventFormData((prevState) => ({
+    setCurrentEvent((prevState) => ({
       ...prevState,
       [event.target.name]: event.target.value,
     }));
+    // setEventFormData((prevState) => ({
+    //   ...prevState,
+    //   [event.target.name]: event.target.value,
+    // }));
   };
 
   // ** TODO: CHANGE THIS **
@@ -129,6 +141,14 @@ const NewEventModal = ({
         ...prevState,
         end: time,
       }));
+  };
+
+  const onSave = (e: MouseEvent<HTMLButtonElement>) => {
+    console.log(e);
+    console.log(currentEvent);
+    setEventFormData(currentEvent);
+    onAddEvent(e);
+    setCurrentEvent(initialEventFormState);
   };
 
   return (
