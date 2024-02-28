@@ -52,10 +52,7 @@ const LandingPage: FC = () => {
             autoComplete="email"
             autoFocus
           />
-          <FormControlLabel
-            control={<Checkbox value="remember" color="primary" />}
-            label="Remember me"
-          />
+
           <Button
             type="submit"
             fullWidth
