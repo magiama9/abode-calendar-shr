@@ -16,6 +16,7 @@ import { AuthenticationMiddleware } from '../shared/authentication.middleware';
   ],
   controllers: [EventsController],
   providers: [EventsService],
+  exports: [EventsService],
 })
 export class EventsModule {}
 

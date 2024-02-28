@@ -10,15 +10,15 @@ const transporter = nodemailer.createTransport({
 });
 // async..await is not allowed in global scope, must use a wrapper
 
-const eventObject = {
-  start: new Date(),
-  end: new Date(),
-  title: 'TestTitle',
-  description: 'AbCdEfG',
-  invitees: ['test@test.com', 'test2@test2.com'],
-};
+// const eventObject = {
+//   start: new Date(),
+//   end: new Date(),
+//   title: 'TestTitle',
+//   description: 'AbCdEfG',
+//   invitees: ['test@test.com', 'test2@test2.com'],
+// };
 
-async function main({ eventObject }) {
+export default async function main(eventObject) {
   // Convert invitees array to string
   const sendToList = eventObject.invitees.join(', ');
 
@@ -42,8 +42,3 @@ async function main({ eventObject }) {
 }
 
 // main({ eventObject }).catch(console.error);
-
-module.exports = {
-  eventObject,
-  main,
-};

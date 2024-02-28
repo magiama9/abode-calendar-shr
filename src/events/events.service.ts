@@ -4,7 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Event } from './interface/event.interface';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
-// import { ObjectId } from 'mongodb';
+import { Schedule, Queue, Job } from 'agenda-nest';
 
 @Injectable()
 export class EventsService {
@@ -13,16 +13,20 @@ export class EventsService {
   // Creates an event
   async createEvent(createEventDto: CreateEventDto): Promise<Event> {
     const newEvent = new this.eventModel(createEventDto);
-    console.log(newEvent);
     return await newEvent.save();
   }
 
+  // Finds all events
+  async findAll(): Promise<Array<Event>> {
+    const allEvents = await this.eventModel.find().exec();
+    return allEvents;
+  }
+
   // Finds all events which a given user email is either the creator or an invitee
-  async findAll(userEmail): Promise<Array<Event>> {
+  async findAllByEmail(userEmail): Promise<Array<Event>> {
     const allEventsByUser = await this.eventModel
       .find({ $or: [{ createdBy: userEmail }, { invitees: userEmail }] })
       .exec();
-    console.log(allEventsByUser);
     return allEventsByUser;
   }
 
