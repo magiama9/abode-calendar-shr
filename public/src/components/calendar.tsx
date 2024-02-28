@@ -119,34 +119,26 @@ const Cal: FC = () => {
   //       console.log(error);
   //     }
   //   };
-  useEffect(() => {
-    // const response = getAllEvents();
-    // response.then(() => console.log(response));
-    promisedEvents.then((results: Event[]) => {
-      console.log(results);
-      //   const dbEvents: Event[] = results.map((result: IEventInfo) => {
-      //     // const newestEvent = Event{result};
 
-      //     setCurrentEvent(result);
-      //     console.log(currentEvent);
-      //     // console.log(newestEvent);
-      //     return {
-      //       eventId: result.id,
-      //       title: result.title,
-      //       descripion: result.description,
-      //       invitees: result.invitees,
-      //       start: result.start,
-      //       end: result.end,
-      //     };
-      //   });
-      //   console.log(typeof dbEvents);
-      //   //   setEvents((prevEvents) => {
-      //   //     [...prevEvents, dbEvents];
-      //   //   });
-      //   //   setEvents((prevState) => [...prevState, dbEvents[0]]);
-      //   console.log(dbEvents[0]);
+  // Fires only (twice) on first component mount because of empty dependency array
+  // Basically functions as the hook version of componentDidMount()
+  useEffect(() => {
+    // Server returns start and end times as strings, they're converted into date objects to work with react-big-calendar
+    promisedEvents.then((results) => {
+      setEvents(
+        results.data.map((result) => ({
+          title: result.title,
+          description: result.description,
+          start: new Date(result.start),
+          end: new Date(result.end),
+          invitees: result.invitees,
+          _id: result._id,
+        })),
+      );
+
+      console.log(events);
     });
-  });
+  }, []);
   const getAllCalenderEvents = () => {
     const dbEvents = getAllEvents();
     console.log(dbEvents);
