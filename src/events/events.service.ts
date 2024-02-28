@@ -17,8 +17,10 @@ export class EventsService {
     return await newEvent.save();
   }
 
-  async findAll(): Promise<Array<Event>> {
-    const allEventsByUser = await this.eventModel.find().exec();
+  async findAll(userEmail): Promise<Array<Event>> {
+    const allEventsByUser = await this.eventModel
+      .find({ invitees: userEmail })
+      .exec();
     console.log(allEventsByUser);
     return allEventsByUser;
   }
