@@ -1,5 +1,6 @@
 import { FC, useState, useEffect, useCallback, Fragment } from 'react';
 import { Calendar, dateFnsLocalizer, Views, Event } from 'react-big-calendar';
+import { useParams } from 'react-router-dom';
 import withDragAndDrop, {
   withDragAndDropProps,
 } from 'react-big-calendar/lib/addons/dragAndDrop';
@@ -18,6 +19,7 @@ import axios from 'axios';
 import { createEvent } from '../utils/createEvent';
 import { updateEvent } from '../utils/updateEvent';
 import { getAllEvents } from '../utils/getAllEvents';
+import { deleteEvent } from '../utils/deleteEvent';
 import { getOneEvent } from '../utils/getOneEvent';
 
 import Box from '@mui/material/Box';
@@ -51,9 +53,11 @@ export interface IEventInfo extends Event {
   invitees: Array<string>;
 }
 
-const promisedEvents = getAllEvents();
-
 const Cal: FC = () => {
+  const path = useParams();
+  const promisedEvents = getAllEvents(path.userEmail);
+
+  //   console.log(path);
   const locales = {
     'en-US': enUS,
   };
@@ -78,8 +82,11 @@ const Cal: FC = () => {
     start,
     end,
   });
-  const [open, setOpen] = useState(false);
-  const [openSlot, setOpenSlot] = useState(false);
+
+  const [isNew, setIsNew] = useState(false); // For managing if event is new or updating current event
+  const [openSlot, setOpenSlot] = useState(false); // For managing modal state
+
+  //   For managing event state
   const [events, setEvents] = useState([
     {
       eventId: '65dba47ad6d0d4a0ac0d31b1',
@@ -104,6 +111,7 @@ const Cal: FC = () => {
     invitees: [],
   };
 
+  //   For managing form state
   const [eventFormData, setEventFormData] = useState<EventFormData>(
     initialEventFormState,
   );
@@ -125,25 +133,27 @@ const Cal: FC = () => {
   useEffect(() => {
     // Server returns start and end times as strings, they're converted into date objects to work with react-big-calendar
     promisedEvents.then((results) => {
-      setEvents(
-        results.data.map((result) => ({
-          title: result.title,
-          description: result.description,
-          start: new Date(result.start),
-          end: new Date(result.end),
-          invitees: result.invitees,
-          _id: result._id,
-        })),
-      );
+      const dbEvents = results?.data.map((result: IEventInfo) => ({
+        title: result.title,
+        description: result.description,
+        start: new Date(result.start),
+        end: new Date(result.end),
+        invitees: result.invitees,
+        _id: result._id,
+      }));
 
-      console.log(events);
+      setEvents(dbEvents);
     });
   }, []);
+
+  //   This is currently unused
+  // I should probably shift the promisedEvents logic here, then call this on useEffect
   const getAllCalenderEvents = () => {
     const dbEvents = getAllEvents();
-    console.log(dbEvents);
+    // console.log(dbEvents);
     // setEvents(dbEvents);
   };
+
   //   Resets Event Form State and closes modal
   const handleClose = () => {
     // console.log(eventFormData);
@@ -153,33 +163,37 @@ const Cal: FC = () => {
 
   //   Generating an object id as a placeholder before database connection is established
   const objectId = () => {
+    function hex(value) {
+      return Math.floor(value).toString(16);
+    }
     return (
       hex(Date.now() / 1000) +
       ' '.repeat(16).replace(/./g, () => hex(Math.random() * 16))
     );
   };
 
-  function hex(value) {
-    return Math.floor(value).toString(16);
-  }
-
-  const onAddEvent = (e: MouseEvent<HTMLButtonElement>) => {
+  //   Handles deleting event
+  const onDeleteEvent = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
 
-    const data: IEventInfo = {
-      ...eventFormData,
-      _id: objectId(),
-      start: currentEvent?.start,
-      end: currentEvent?.end,
-    };
+    // Checks if current event already exists
+    // e.g. should we delete the stored event on delete or simply close the modal without saving
+    if (currentEvent._id) {
+      const deletedEvent = deleteEvent(currentEvent._id);
 
-    const newEvents = [...events, data];
-
-    setEvents(newEvents);
-    handleClose();
+      deletedEvent.then((response: Promise<object>) => {
+        const newEvents = events.filter((event) => {
+          return event._id !== response?.data.event._id;
+        });
+        setEvents(newEvents);
+      });
+      handleClose();
+    } else {
+      handleClose();
+    }
   };
 
-  //   This should get us the initial view on render
+  //  This should get us the initial view on render
   //  Currently unnecessary but also not breaking anything, so...
   const InitialRangeChangeToolbar = (props) => {
     useEffect(() => {
@@ -191,41 +205,35 @@ const Cal: FC = () => {
   //   Handles selecting event
   const handleSelectEvent = (event: IEventInfo) => {
     setOpenSlot(true);
+
+    // We should probably fetch the event info from the database here rather than relying on state in case someone else edited the event
     // getOneEvent(event.eventId);
     setEventFormData(event);
     setCurrentEvent(event);
   };
-  //   const handleSelectEvent = useCallback((event: Event) => {
-  //     setOpenSlot(true);
-  //     getOneEvent(event.eventId);
 
-  //     setEventFormData(event);
-
-  //     // window.alert(event.title);
-  //     setCurrentEvent(event);
-  //   }, []);
-
+  // Handles adding new event to the calendar
   const addNewEvent = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    console.log(eventFormData);
-    // const data = {
-    //   ...eventFormData,
-    //   _id: objectId(),
-    //   start: currentEvent?.start,
-    //   end: currentEvent?.end,
-    // };
-    console.log(currentEvent);
-    // const newEvent = {
-    //   title: eventFormData.title,
-    //   start: event.start,
-    //   end: data.end,
-    //   invitees: data.invitees,
-    // };
-    setEvents((prev) => [...prev, eventFormData]);
-    createEvent(eventFormData);
+
+    const createdEvent = createEvent(eventFormData);
+
+    createdEvent.then((result) => {
+      // restructuring object as new event so we can convert dates from strings to date objects for react-big-calendar to not freak out
+      const newEvent = {
+        title: result?.data.event.title,
+        description: result?.data.event.description,
+        start: new Date(result?.data.event.start),
+        end: new Date(result?.data.event.end),
+        invitees: result?.data.event.invitees,
+        _id: result?.data.event._id,
+      };
+      setEvents((prev) => [...prev, newEvent]);
+      console.log(events);
+    });
+
     handleClose();
   };
-  // Handles adding new event to the calendar
 
   //   Functionality for clicking on the calendar or dragging to create a new event
   const handleSelectSlot = ({ start, end }) => {
@@ -321,6 +329,7 @@ const Cal: FC = () => {
         eventFormData={eventFormData}
         setEventFormData={setEventFormData}
         onAddEvent={addNewEvent}
+        onDeleteEvent={onDeleteEvent}
       />
     </div>
   );
