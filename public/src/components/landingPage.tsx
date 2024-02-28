@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
@@ -8,13 +9,18 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 
-export default function landingPage() {
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+const LandingPage: FC = () => {
+  const navigate = useNavigate();
+  const useHandleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
+    const userEmail = data.get('email');
     console.log({
       email: data.get('email'),
     });
+
+    const calendarUrl = '/calendar/' + userEmail;
+    navigate(calendarUrl);
   };
   return (
     <Container component="main" maxWidth="xs">
@@ -30,7 +36,12 @@ export default function landingPage() {
         <Typography component="h1" variant="h5">
           View your calendar
         </Typography>
-        <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+        <Box
+          component="form"
+          onSubmit={useHandleSubmit}
+          noValidate
+          sx={{ mt: 1 }}
+        >
           <TextField
             margin="normal"
             required
@@ -57,4 +68,6 @@ export default function landingPage() {
       </Box>
     </Container>
   );
-}
+};
+
+export default LandingPage;
