@@ -17,18 +17,14 @@ export class EventsService {
     return await newEvent.save();
   }
 
+  // Finds all events which a given user email is either the creator or an invitee
   async findAll(userEmail): Promise<Array<Event>> {
     const allEventsByUser = await this.eventModel
-      .find({ invitees: userEmail })
+      .find({ $or: [{ createdBy: userEmail }, { invitees: userEmail }] })
       .exec();
     console.log(allEventsByUser);
     return allEventsByUser;
   }
-  // Finds all events that are associated with a given user
-  // async findAllByUser(userId: number): Promise<Array<Event>> {
-  //   const allEventsByUser = await this.eventModel.findAllByUser(userId).exec();
-  //   return allEventsByUser;
-  // }
 
   // Finds a given event by eventId
   async findOne(eventId: number): Promise<Event> {

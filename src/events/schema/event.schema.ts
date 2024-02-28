@@ -5,5 +5,6 @@ export const EventSchema = new mongoose.Schema({
   description: String,
   start: Date,
   end: Date,
+  createdBy: String,
   invitees: Array<string>,
 });

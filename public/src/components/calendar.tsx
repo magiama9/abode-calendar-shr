@@ -40,7 +40,8 @@ export interface EventFormData {
   start?: Date;
   end?: Date;
   eventId?: string;
-  invitees: Array<string>;
+  createdBy?: string;
+  invitees?: Array<string>;
 }
 
 export interface IEventInfo extends Event {
@@ -49,8 +50,9 @@ export interface IEventInfo extends Event {
   description: string;
   start: Date;
   end: Date;
-  eventId: string;
-  invitees: Array<string>;
+  eventId?: string;
+  createdBy?: string;
+  invitees?: Array<string>;
 }
 
 const Cal: FC = () => {
@@ -108,6 +110,7 @@ const Cal: FC = () => {
     eventId: undefined,
     start: undefined,
     end: undefined,
+    createdBy: path.userEmail,
     invitees: [],
   };
 
@@ -233,6 +236,7 @@ const Cal: FC = () => {
               description: result?.data.event.description,
               start: new Date(result?.data.event.start),
               end: new Date(result?.data.event.end),
+              createdBy: result?.data.event.createdBy,
               invitees: result?.data.event.invitees,
               _id: result?.data.event._id,
             };
@@ -251,6 +255,7 @@ const Cal: FC = () => {
           start: new Date(result?.data.event.start),
           end: new Date(result?.data.event.end),
           invitees: result?.data.event.invitees,
+          createdBy: result?.data.event.createdBy,
           _id: result?.data.event._id,
         };
         setEvents((prev) => [...prev, newEvent]);

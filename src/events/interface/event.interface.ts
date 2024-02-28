@@ -5,6 +5,7 @@ export interface Event extends Document {
   description: string;
   start: Date;
   end: Date;
+  createdBy: string;
   // date: Date;
   invitees: Array<string>;
 }
