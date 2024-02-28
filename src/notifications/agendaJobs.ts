@@ -8,6 +8,7 @@ agenda.define('welcome message', () => {
   console.log('This is running on agenda');
 });
 
-await agenda.start();
-
-await agenda.every('5 seconds =', 'welcome message');
+export default async function agendaJobs() {
+  await agenda.start();
+  await agenda.every('5 seconds =', 'welcome message');
+}
