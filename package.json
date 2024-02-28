@@ -25,6 +25,7 @@
     "@nestjs/mapped-types": "*",
     "@nestjs/mongoose": "^10.0.4",
     "@nestjs/platform-express": "^10.0.0",
+    "agenda": "^5.0.0",
     "cron": "^3.1.6",
     "dotenv": "^16.4.5",
     "express-jwt": "^8.4.1",
@@ -77,5 +78,6 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
-  }
+  },
+  "type": "module"
 }
