@@ -252,10 +252,11 @@ const Cal: FC = () => {
 
     // Creates new array of events and updates event with matching eventId
     const newEvents = events.map((e) => {
-      if (e.eventId !== event.eventId) {
+      if (e._id !== event._id) {
         return e;
       } else {
-        console.log(e.eventId);
+        console.log(e._id);
+        console.log(e);
         updateEvent({ ...e, start: new Date(start), end: new Date(end) });
         return {
           ...e,
@@ -283,9 +284,10 @@ const Cal: FC = () => {
   const onEventDrop: withDragAndDropProps['onEventDrop'] = (data) => {
     const { event, start, end } = data;
     const newEvents = events.map((e) => {
-      if (e.eventId !== event.eventId) {
+      if (e._id !== event._id) {
         return e;
       } else {
+        updateEvent({ ...e, start: new Date(start), end: new Date(end) });
         return {
           ...e,
           start: new Date(start),

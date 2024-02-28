@@ -13,11 +13,13 @@ export class EventsService {
   // Creates an event
   async createEvent(createEventDto: CreateEventDto): Promise<Event> {
     const newEvent = new this.eventModel(createEventDto);
+    console.log(newEvent);
     return await newEvent.save();
   }
 
   async findAll(): Promise<Array<Event>> {
     const allEventsByUser = await this.eventModel.find().exec();
+    console.log(allEventsByUser);
     return allEventsByUser;
   }
   // Finds all events that are associated with a given user
