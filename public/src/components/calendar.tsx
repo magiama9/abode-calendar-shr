@@ -146,7 +146,7 @@ const Cal: FC = () => {
     });
   }, []);
 
-  //   This is currently unused
+  // This is currently unused
   // I should probably shift the promisedEvents logic here, then call this on useEffect
   const getAllCalenderEvents = () => {
     const dbEvents = getAllEvents();
@@ -158,6 +158,7 @@ const Cal: FC = () => {
   const handleClose = () => {
     // console.log(eventFormData);
     setEventFormData(initialEventFormState);
+    setCurrentEvent(initialEventFormState);
     setOpenSlot(false);
   };
 
@@ -216,21 +217,46 @@ const Cal: FC = () => {
   const addNewEvent = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
 
-    const createdEvent = createEvent(eventFormData);
-
-    createdEvent.then((result) => {
-      // restructuring object as new event so we can convert dates from strings to date objects for react-big-calendar to not freak out
-      const newEvent = {
-        title: result?.data.event.title,
-        description: result?.data.event.description,
-        start: new Date(result?.data.event.start),
-        end: new Date(result?.data.event.end),
-        invitees: result?.data.event.invitees,
-        _id: result?.data.event._id,
-      };
-      setEvents((prev) => [...prev, newEvent]);
-      console.log(events);
-    });
+    // If there's an event id, it's an update action
+    // Otherwise it's a new event
+    // Also there has to be a better way to build these objects
+    // Also also my types are both questionable and conflicting
+    if (currentEvent._id) {
+      const updatedEvent = updateEvent(eventFormData);
+      updatedEvent.then((result) => {
+        const newEvents = events.map((event) => {
+          if (event._id !== result?.data.event._id) {
+            return event;
+          } else {
+            const newEvent = {
+              title: result?.data.event.title,
+              description: result?.data.event.description,
+              start: new Date(result?.data.event.start),
+              end: new Date(result?.data.event.end),
+              invitees: result?.data.event.invitees,
+              _id: result?.data.event._id,
+            };
+            return newEvent;
+          }
+        });
+        setEvents(newEvents);
+      });
+    } else {
+      const createdEvent = createEvent(eventFormData);
+      createdEvent.then((result) => {
+        // restructuring object as new event so we can convert dates from strings to date objects for react-big-calendar to not freak out
+        const newEvent = {
+          title: result?.data.event.title,
+          description: result?.data.event.description,
+          start: new Date(result?.data.event.start),
+          end: new Date(result?.data.event.end),
+          invitees: result?.data.event.invitees,
+          _id: result?.data.event._id,
+        };
+        setEvents((prev) => [...prev, newEvent]);
+        console.log(events);
+      });
+    }
 
     handleClose();
   };

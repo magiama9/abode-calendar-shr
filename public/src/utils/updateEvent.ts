@@ -6,7 +6,7 @@ export const updateEvent = async (event) => {
       'http://127.0.0.1:5001/events/' + event._id,
       event,
     );
-    console.log(response);
+    return response;
   } catch (error) {
     console.log(error);
   }

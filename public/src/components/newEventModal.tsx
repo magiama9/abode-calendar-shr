@@ -42,6 +42,7 @@ const NewEventModal = ({
   eventFormData,
   setEventFormData,
   onAddEvent,
+  onDeleteEvent
 }: IProps) => {
   const { description, title, invitees, start, end } = eventFormData;
 
@@ -63,14 +64,14 @@ const NewEventModal = ({
 
   // Change Handler for form input changing
   const onChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setCurrentEvent((prevState) => ({
-      ...prevState,
-      [event.target.name]: event.target.value,
-    }));
-    // setEventFormData((prevState) => ({
+    // setCurrentEvent((prevState) => ({
     //   ...prevState,
     //   [event.target.name]: event.target.value,
     // }));
+    setEventFormData((prevState) => ({
+      ...prevState,
+      [event.target.name]: event.target.value,
+    }));
   };
 
   // ** TODO: CHANGE THIS **
@@ -272,7 +273,7 @@ const NewEventModal = ({
             <Button variant="contained" onClick={onAddEvent}>
               Save Event
             </Button>
-            <Button color="error">Delete Event</Button>
+            <Button color="error" onClick={onDeleteEvent}>Delete Event</Button>
           </Box>
           {/* <Typography id="modal-modal-description" sx={{ mt: 2 }}>
             Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
