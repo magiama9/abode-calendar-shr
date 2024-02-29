@@ -9,42 +9,33 @@ import {
   Res,
   HttpStatus,
   NotFoundException,
-  // Query,
 } from '@nestjs/common';
 import { EventsService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { ValidateObjectId } from 'src/shared/validate-object-id.pipes';
 import Agenda from 'agenda';
-import { JobService } from 'src/notifications/agendaJobs';
-import main from 'src/notifications/nodeMailer';
+import main from 'src/notifications/nodeMailer'; // Note to self: rename this function
+import { sub, isPast } from 'date-fns';
+
+// ** CONTAINS NOTIFICATION LOGIC **
+// ** THIS SHOULD BE SEPARATED INTO A SEPARATE MODULE **
 
 const agenda = new Agenda({
   db: { address: 'mongodb://127.0.0.1:27017/abode-calendar-shr' },
   name: 'Events Queue',
 });
 
+// Creates a new agenda job every time it's called
 agenda.define('Add Notification', async (job) => {
-  // const eventObject = {
-  //   start: job.attrs.data.start,
-  //   end: new Date(),
-  //   title: job.attrs.title,
-  //   description: 'AbCdEfG',
-  //   invitees: ['test@test.com', 'test2@test2.com'],
-  // };
-  // const eventObject = await job.attrs.data;
-  // eventObject.then(() => {
-  //   console.log(eventObject);
-  // });
-  // main({ invitees: ['bob@distinctUntilKeyChanged.com'] });
   if (job.attrs.data) {
-    const invitees = job.attrs.data.start;
-    console.log(typeof invitees);
-    const eventObject = job.attrs.data;
+    const notificationList = [].concat(
+      job.attrs.data.invitees,
+      job.attrs.data.createdBy,
+    );
+    const eventObject = { ...job.attrs.data, invitees: notificationList };
     main(eventObject);
   }
-  // const eventObject = job.attrs.data;
-  // console.log(eventObject); // console.log(job.attrs.data);
 });
 @Controller('events')
 export class EventsController {
@@ -68,8 +59,17 @@ export class EventsController {
     if (!newEvent) {
       throw new NotFoundException('Event was not created.');
     } else {
-      await agenda.start();
-      await agenda.schedule(newEvent.start, 'Add Notification', newEvent);
+      // await agenda.start();
+
+      // Get the time 30 minutes before the event
+      // If that time is before now, we don't send a notification
+      // Without this, if you schedule an agenda job for a time before now, it runs on instantiation
+      const notificationTime = sub(newEvent.start, { minutes: 30 });
+
+      if (!isPast(notificationTime)) {
+        console.log('event is in the future');
+        await agenda.schedule(notificationTime, 'Add Notification', newEvent);
+      }
       return res.status(HttpStatus.OK).json({
         message: 'Event has been created successfully.',
         event: newEvent,
@@ -100,6 +100,23 @@ export class EventsController {
     );
     if (!updatedEvent) {
       throw new NotFoundException('Event does not exist');
+    } else {
+      // Delete old job and create new job
+      // As far as I know, agenda doesn't provide a native method to update jobs
+      // Another option would be to store the agenda job id on the event, and then search the job db for that
+      const agendaDelete = await agenda.cancel({
+        'data._id': updatedEvent._id,
+      });
+
+      const notificationTime = sub(updatedEvent.start, { minutes: 30 });
+      if (!isPast(notificationTime)) {
+        console.log('event is in the future');
+        await agenda.schedule(
+          notificationTime,
+          'Add Notification',
+          updatedEvent,
+        );
+      }
     }
     return res.status(HttpStatus.OK).json({
       message: 'Event has been successfully updated.',
@@ -116,10 +133,15 @@ export class EventsController {
     const deletedEvent = await this.eventsService.removeEvent(eventId);
     if (!deletedEvent) {
       throw new NotFoundException('Event does not exist.');
+    } else {
+      // Deletes the agenda job for the given event id
+      const agendaDelete = await agenda.cancel({
+        'data._id': deletedEvent._id,
+      });
+      return res.status(HttpStatus.OK).json({
+        message: 'Event has been deleted.',
+        event: deletedEvent,
+      });
     }
-    return res.status(HttpStatus.OK).json({
-      message: 'Event has been deleted.',
-      event: deletedEvent,
-    });
   }
 }
