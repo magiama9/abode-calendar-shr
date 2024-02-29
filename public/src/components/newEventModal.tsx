@@ -1,5 +1,13 @@
 import { isBefore, add } from 'date-fns';
-import { useState, ChangeEvent, Dispatch, SetStateAction } from 'react';
+import {
+  useState,
+  ChangeEvent,
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useRef,
+  useContext,
+} from 'react';
 import { Typography, Modal, TextField, Button, Box } from '@mui/material';
 import {
   LocalizationProvider,
@@ -8,6 +16,7 @@ import {
 } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
 import { EventFormData } from './calendar';
+import { useCustomState } from '../utils/hooks/useCustomState';
 
 // ** Styling **
 // ** This is a wacky, non-responsive, terrible implementation, but it gets the job done for now
@@ -42,7 +51,7 @@ const NewEventModal = ({
   eventFormData,
   setEventFormData,
   onAddEvent,
-  onDeleteEvent
+  onDeleteEvent,
 }: IProps) => {
   const { description, title, invitees, start, end } = eventFormData;
 
@@ -55,7 +64,12 @@ const NewEventModal = ({
     invitees: [],
   };
 
+  const [workingFormData, setWorkingFormData] = useState(eventFormData);
   const [currentEvent, setCurrentEvent] = useState(eventFormData);
+
+  // useContext(TestFormData);
+
+  // const initialFormState = useRef(eventFormData);
   // Closes Modal
   const onClose = () => handleClose();
 
@@ -64,11 +78,12 @@ const NewEventModal = ({
 
   // Change Handler for form input changing
   const onChange = (event: ChangeEvent<HTMLInputElement>) => {
+    // console.log(eventFormData);
     // setCurrentEvent((prevState) => ({
     //   ...prevState,
     //   [event.target.name]: event.target.value,
     // }));
-    setEventFormData((prevState) => ({
+    setWorkingFormData((prevState) => ({
       ...prevState,
       [event.target.name]: event.target.value,
     }));
@@ -82,7 +97,7 @@ const NewEventModal = ({
   // Handles Invitee Change
   const onInviteeChange = (event: ChangeEvent<HtmlInputElement>) => {
     const newInviteeArray = event.target.value.split(',');
-    setEventFormData((prevState) => ({
+    setWorkingFormData((prevState) => ({
       ...prevState,
       invitees: newInviteeArray,
     }));
@@ -107,7 +122,7 @@ const NewEventModal = ({
     // If start time is before end time, store start time
     // Otherwise we push the end time back 30 minutes from start time
     if (isBefore(time, end)) {
-      setEventFormData((prevState) => ({
+      setWorkingFormData((prevState) => ({
         ...prevState,
         start: time,
       }));
@@ -115,7 +130,7 @@ const NewEventModal = ({
       // const duration = intervalToDuration({ start: time, end: end });
       const duration = { minutes: 30 };
       const endTime = add(time, duration);
-      setEventFormData((prevState) => ({
+      setWorkingFormData((prevState) => ({
         ...prevState,
         start: time,
         end: endTime,
@@ -132,30 +147,38 @@ const NewEventModal = ({
     if (isBefore(time, start)) {
       const duration = { minutes: -30 };
       const startTime = add(time, duration);
-      setEventFormData((prevState) => ({
+      setWorkingFormData((prevState) => ({
         ...prevState,
         start: startTime,
         end: time,
       }));
     } else
-      setEventFormData((prevState) => ({
+      setWorkingFormData((prevState) => ({
         ...prevState,
         end: time,
       }));
   };
 
+  // useEffect(()=>{
+  //   console.log(eventFormData);
+  // },[eventFormData])
   const onSave = (e: MouseEvent<HTMLButtonElement>) => {
-    console.log(e);
-    console.log(currentEvent);
-    setEventFormData(currentEvent);
+    console.log(workingFormData);
+    setEventFormData(workingFormData);
+    console.log(eventFormData);
     onAddEvent(e);
-    setCurrentEvent(initialEventFormState);
+    // setWorkingEvent(initialEventFormState);
   };
 
+  const enterTest = (e) => {
+    console.log(e);
+    console.log('test');
+  };
   return (
     <div>
       <Modal
         open={open}
+        // onTransitionEnter={console.log(workingFormData)}
         onClose={onClose}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
@@ -168,7 +191,7 @@ const NewEventModal = ({
             <LocalizationProvider dateAdapter={AdapterDateFns}>
               <TextField
                 name="title"
-                value={title}
+                value={workingFormData.title}
                 margin="dense"
                 id="title"
                 label="Title"
@@ -179,7 +202,7 @@ const NewEventModal = ({
               />
               <TextField
                 name="description"
-                value={description}
+                value={workingFormData.description}
                 margin="dense"
                 id="description"
                 label="Description"
@@ -193,7 +216,7 @@ const NewEventModal = ({
               />
               <TextField
                 name="invitees"
-                value={invitees}
+                value={workingFormData.invitees}
                 margin="dense"
                 id="invitees"
                 label="Invitees - Separate by comma"
@@ -224,7 +247,7 @@ const NewEventModal = ({
               <TimeField
                 name="startTime"
                 sx={formStyle}
-                value={start}
+                value={workingFormData.start}
                 margin="dense"
                 id="startTime"
                 label="Start Time"
@@ -234,7 +257,7 @@ const NewEventModal = ({
               <TimeField
                 name="endTime"
                 sx={formStyle}
-                value={end}
+                value={workingFormData.end}
                 margin="dense"
                 id="endTime"
                 label="End Time"
@@ -244,7 +267,7 @@ const NewEventModal = ({
               <DatePicker
                 sx={formStyle}
                 name="startDate"
-                value={start}
+                value={workingFormData.start}
                 label="Start Date"
                 onChange={onStartTimeChange}
                 // variant="outlined"
@@ -252,7 +275,7 @@ const NewEventModal = ({
               <DatePicker
                 sx={formStyle}
                 name="endDate"
-                value={end}
+                value={workingFormData.end}
                 label="End Date"
                 onChange={onEndTimeChange}
                 // variant="outlined"
@@ -270,10 +293,12 @@ const NewEventModal = ({
               /> */}
               <p></p>
             </LocalizationProvider>
-            <Button variant="contained" onClick={onAddEvent}>
+            <Button variant="contained" onClick={onSave}>
               Save Event
             </Button>
-            <Button color="error" onClick={onDeleteEvent}>Delete Event</Button>
+            <Button color="error" onClick={onDeleteEvent}>
+              Delete Event
+            </Button>
           </Box>
           {/* <Typography id="modal-modal-description" sx={{ mt: 2 }}>
             Duis mollis, est non commodo luctus, nisi erat porttitor ligula.

@@ -1,4 +1,11 @@
-import { FC, useState, useEffect, useCallback, Fragment } from 'react';
+import {
+  FC,
+  useState,
+  useEffect,
+  useCallback,
+  createContext,
+  useContext,
+} from 'react';
 import { Calendar, dateFnsLocalizer, Views, Event } from 'react-big-calendar';
 import { useParams } from 'react-router-dom';
 import withDragAndDrop, {
@@ -20,19 +27,9 @@ import { createEvent } from '../utils/createEvent';
 import { updateEvent } from '../utils/updateEvent';
 import { getAllEvents } from '../utils/getAllEvents';
 import { deleteEvent } from '../utils/deleteEvent';
-import { getOneEvent } from '../utils/getOneEvent';
-
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
-import Modal from '@mui/material/Modal';
 
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { create } from 'domain';
-
-import CreateEventModal from './createEventModal';
-import { set } from 'date-fns';
 
 export interface EventFormData {
   title: string;
@@ -56,10 +53,10 @@ export interface IEventInfo extends Event {
 }
 
 const Cal: FC = () => {
+  // Fetches path to grab user email address
+  // Or whatever unvalidated junk they pass to the url I guess
   const path = useParams();
-  const promisedEvents = getAllEvents(path.userEmail);
 
-  //   console.log(path);
   const locales = {
     'en-US': enUS,
   };
@@ -119,21 +116,13 @@ const Cal: FC = () => {
     initialEventFormState,
   );
 
-  //   This logic should be in utils, but isn't resolving promise properly in useEffect()
-  //   const getAllEvents = async () => {
-  //     try {
-  //       const response = await axios.get('http://127.0.0.1:5001/events/');
-  //       //   setEvents(prevState);
-  //       console.log(response);
-  //       return response;
-  //     } catch (error) {
-  //       console.log(error);
-  //     }
-  //   };
+  const TestFormData = createContext('test');
+  const test = useContext(TestFormData);
 
   // Fires only (twice) on first component mount because of empty dependency array
   // Basically functions as the hook version of componentDidMount()
   useEffect(() => {
+    const promisedEvents = getAllEvents(path.userEmail);
     // Server returns start and end times as strings, they're converted into date objects to work with react-big-calendar
     promisedEvents.then((results) => {
       const dbEvents = results?.data.map((result: IEventInfo) => ({
@@ -148,14 +137,6 @@ const Cal: FC = () => {
       setEvents(dbEvents);
     });
   }, []);
-
-  // This is currently unused
-  // I should probably shift the promisedEvents logic here, then call this on useEffect
-  const getAllCalenderEvents = () => {
-    const dbEvents = getAllEvents();
-    // console.log(dbEvents);
-    // setEvents(dbEvents);
-  };
 
   //   Resets Event Form State and closes modal
   const handleClose = () => {
@@ -284,9 +265,6 @@ const Cal: FC = () => {
 
   // Handles Event Resize
   const onEventResize: withDragAndDropProps['onEventResize'] = (data) => {
-    console.log(data);
-    console.log(events);
-    console.log(Views);
     const { event, start, end } = data;
 
     // Creates new array of events and updates event with matching eventId
@@ -294,8 +272,6 @@ const Cal: FC = () => {
       if (e._id !== event._id) {
         return e;
       } else {
-        console.log(e._id);
-        console.log(e);
         updateEvent({ ...e, start: new Date(start), end: new Date(end) });
         return {
           ...e,
@@ -308,16 +284,6 @@ const Cal: FC = () => {
     //
     setEvents(newEvents);
   };
-  // setEvents((currentEvents) => {
-  //   const newEvent = {
-  //     title: event.title,
-  //     start: new Date(start),
-  //     end: new Date(end),
-  //   };
-  //   console.log(newEvent);
-  //   return [...currentEvents, newEvent];
-  // });
-  // };
 
   // Handles Event Dragging
   const onEventDrop: withDragAndDropProps['onEventDrop'] = (data) => {
@@ -339,29 +305,31 @@ const Cal: FC = () => {
 
   return (
     <div>
-      <DnDCalendar
-        components={{ toolbar: InitialRangeChangeToolbar }}
-        defaultView="week"
-        events={events}
-        localizer={localizer}
-        onSelectEvent={handleSelectEvent}
-        onSelectSlot={handleSelectSlot}
-        onView={onView}
-        view={view}
-        onEventDrop={onEventDrop}
-        onEventResize={onEventResize}
-        selectable
-        resizable
-        style={{ height: '100vh' }}
-      />
-      <NewEventModal
-        open={openSlot}
-        handleClose={handleClose}
-        eventFormData={eventFormData}
-        setEventFormData={setEventFormData}
-        onAddEvent={addNewEvent}
-        onDeleteEvent={onDeleteEvent}
-      />
+      <TestFormData.Provider value="test">
+        <DnDCalendar
+          components={{ toolbar: InitialRangeChangeToolbar }}
+          defaultView="week"
+          events={events}
+          localizer={localizer}
+          onSelectEvent={handleSelectEvent}
+          onSelectSlot={handleSelectSlot}
+          onView={onView}
+          view={view}
+          onEventDrop={onEventDrop}
+          onEventResize={onEventResize}
+          selectable
+          resizable
+          style={{ height: '100vh' }}
+        />
+        <NewEventModal
+          open={openSlot}
+          handleClose={handleClose}
+          eventFormData={eventFormData}
+          setEventFormData={setEventFormData}
+          onAddEvent={addNewEvent}
+          onDeleteEvent={onDeleteEvent}
+        />
+      </TestFormData.Provider>
     </div>
   );
 };
