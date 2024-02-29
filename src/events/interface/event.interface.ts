@@ -6,6 +6,5 @@ export interface Event extends Document {
   start: Date;
   end: Date;
   createdBy: string;
-  // date: Date;
   invitees: Array<string>;
 }

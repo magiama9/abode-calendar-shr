@@ -1,14 +1,9 @@
-import {
-  Module,
-  NestModule,
-  MiddlewareConsumer,
-  RequestMethod,
-} from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { EventsService } from './events.service';
 import { EventsController } from './events.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { EventSchema } from './schema/event.schema';
-import { AuthenticationMiddleware } from '../shared/authentication.middleware';
+// import { AuthenticationMiddleware } from '../shared/authentication.middleware';
 
 @Module({
   imports: [

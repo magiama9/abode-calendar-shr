@@ -4,7 +4,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Event } from './interface/event.interface';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
-import { Schedule, Queue, Job } from 'agenda-nest';
 
 @Injectable()
 export class EventsService {
