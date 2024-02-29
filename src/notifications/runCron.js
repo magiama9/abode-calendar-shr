@@ -14,7 +14,7 @@ const transporter = nodemailer.createTransport({
 // async..await is not allowed in global scope, must use a wrapper
 async function main(eventObject) {
   // Convert invitees array to string
-  console.log('running');
+  // console.log('running');
   const sendToList = eventObject.invitees.join(', ');
 
   const emailBody =

@@ -69,7 +69,7 @@ There are several areas where I made choices to speed up development and sacrifi
 
 The most glaring omission in my mind is authentication. Both the front end and the back end definitely need some sort of authorization system. As it is, you can view and edit any calendar you want just by changing the url or writing requests to the server.
 
-As I mentioned in the front end section, there's also an issue with how I'm storing state on the form component which is causing unnecessary re-renders of the calendar component on form state change. This is something that can be easily fixed, but the core functionality is working currently, so I haven't fixed it yet.
+As I mentioned in the front end section, there's also an issue with how I'm storing state on the form component which is causing unnecessary re-renders of the calendar component on form state change. This is something that can be easily fixed, but the core functionality is working currently, so I haven't fixed it yet. Another front end noticeable omission is decent responsiveness and accessibility (not to mention making it look a little less gnarly). Those issues are easily fixable and don't detract from the core functionality currently.
 
 Scalability of the architecture isn't terrible, but could definitely be improved. Currently, when a user views their events, the database is querying all events to find a match on a nested property within the collection. This is fast with a relatively small number of events, but can slow down considerably as the collection size increases. As an improvement, there should probably be a `user` collection that stores events or eventIds on it.
 

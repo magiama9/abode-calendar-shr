@@ -15,9 +15,9 @@ const LandingPage: FC = () => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const userEmail = data.get('email');
-    console.log({
-      email: data.get('email'),
-    });
+    // console.log({
+    //   email: data.get('email'),
+    // });
 
     const calendarUrl = '/calendar/' + userEmail;
     navigate(calendarUrl);

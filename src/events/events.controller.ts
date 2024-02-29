@@ -73,8 +73,7 @@ export class EventsController {
       const notificationTime = sub(newEvent.start, { minutes: 30 });
 
       if (!isPast(notificationTime)) {
-        console.log('event is in the future');
-        console.log();
+        // console.log('event is in the future');
         await agenda.schedule(notificationTime, 'Add Notification', newEvent);
       }
       return res.status(HttpStatus.OK).json({
@@ -117,7 +116,7 @@ export class EventsController {
 
       const notificationTime = sub(updatedEvent.start, { minutes: 30 });
       if (!isPast(notificationTime)) {
-        console.log('event is in the future');
+        // console.log('event is in the future');
         await agenda.schedule(
           notificationTime,
           'Add Notification',

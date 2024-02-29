@@ -9,7 +9,6 @@ const agenda = new Agenda({
 });
 
 agenda.define('welcome message', () => {
-  console.log(process.env.DATABASE_URL);
   console.log('Agenda is running');
 });
 

@@ -240,7 +240,7 @@ const Cal: FC = () => {
           _id: result?.data.event._id,
         };
         setEvents((prev) => [...prev, newEvent]);
-        console.log(events);
+        // console.log(events);
       });
     }
 
