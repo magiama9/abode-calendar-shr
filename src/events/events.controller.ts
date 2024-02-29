@@ -17,12 +17,16 @@ import { ValidateObjectId } from 'src/shared/validate-object-id.pipes';
 import Agenda from 'agenda';
 import main from 'src/notifications/nodeMailer'; // Note to self: rename this function
 import { sub, isPast } from 'date-fns';
+import dotenv from 'dotenv';
 
+// Theoretically process.env should already be loaded globally, but it doesn't seem to have loaded by the time this is being used, so instantiating it again here fixes issues
+dotenv.config();
 // ** CONTAINS NOTIFICATION LOGIC **
 // ** THIS SHOULD BE SEPARATED INTO A SEPARATE MODULE **
 
+const dbURL = process.env.DATABASE_URL;
 const agenda = new Agenda({
-  db: { address: 'mongodb://127.0.0.1:27017/abode-calendar-shr' },
+  db: { address: dbURL },
   name: 'Events Queue',
 });
 
@@ -70,6 +74,7 @@ export class EventsController {
 
       if (!isPast(notificationTime)) {
         console.log('event is in the future');
+        console.log();
         await agenda.schedule(notificationTime, 'Add Notification', newEvent);
       }
       return res.status(HttpStatus.OK).json({

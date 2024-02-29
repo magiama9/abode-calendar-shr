@@ -1,11 +1,15 @@
 import Agenda from 'agenda';
+import dotenv from 'dotenv';
 
+// dotenv.config();
+const dbURL = process.env.DATABASE_URL;
 const agenda = new Agenda({
-  db: { address: 'mongodb://127.0.0.1:27017/abode-calendar-shr' },
+  db: { address: dbURL },
   name: 'Notification Queue',
 });
 
 agenda.define('welcome message', () => {
+  console.log(process.env.DATABASE_URL);
   console.log('Agenda is running');
 });
 
