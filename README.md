@@ -1,6 +1,6 @@
 # Welcome to Abode Calendar
 
-This is a simple proof-of-concept app built for AbodeHR. The associated requirements document is here in the repo, but main requirements will be duplicated here. At its core, this is a simple CRUD calendar app with user notifications. In this README you will find the basic design principles, an overview of the technologies used, and a roadmap for improvement.
+This is a simple proof-of-concept app built for AbodeHR. The associated requirements document is here in the repo. At its core, this is a simple CRUD calendar app with user notifications. In this README you will find the basic design principles, an overview of the technologies used, and a roadmap for improvement.
 
 # Getting Started
 
@@ -76,3 +76,5 @@ Scalability of the architecture isn't terrible, but could definitely be improved
 Another notable improvement would be to only fetch events for the current view range of the calendar. Currently when a user logs in, it pulls all of their events. Instead, we should essentially lazy load only the events that would be in view at a particular time.
 
 In terms of overall code quality, there's definitely improvement to be made on the typings. Types are currently very inconsistently applied, and are even sometimes conflicting(yay!). Any halfway decent build pipeline would chuck this thing right out the door. But right now it runs in dev, and that's what I care about.
+
+Testing is also currently non-existent. Given more time, I would have liked to increase the testing coverage from 0% to at least 75%(hey, we can't be perfect, right?).
