@@ -116,8 +116,8 @@ const Cal: FC = () => {
     initialEventFormState,
   );
 
-  const TestFormData = createContext('test');
-  const test = useContext(TestFormData);
+  // const TestFormData = createContext('test');
+  // const test = useContext(TestFormData);
 
   // Fires only (twice) on first component mount because of empty dependency array
   // Basically functions as the hook version of componentDidMount()
@@ -305,7 +305,7 @@ const Cal: FC = () => {
 
   return (
     <div>
-      <TestFormData.Provider value="test">
+      {/* <TestFormData.Provider value="test"> */}
         <DnDCalendar
           components={{ toolbar: InitialRangeChangeToolbar }}
           defaultView="week"
@@ -329,7 +329,7 @@ const Cal: FC = () => {
           onAddEvent={addNewEvent}
           onDeleteEvent={onDeleteEvent}
         />
-      </TestFormData.Provider>
+      {/* </TestFormData.Provider> */}
     </div>
   );
 };

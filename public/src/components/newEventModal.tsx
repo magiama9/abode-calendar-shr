@@ -78,12 +78,8 @@ const NewEventModal = ({
 
   // Change Handler for form input changing
   const onChange = (event: ChangeEvent<HTMLInputElement>) => {
-    // console.log(eventFormData);
-    // setCurrentEvent((prevState) => ({
-    //   ...prevState,
-    //   [event.target.name]: event.target.value,
-    // }));
-    setWorkingFormData((prevState) => ({
+    event.preventDefault();
+    setEventFormData((prevState) => ({
       ...prevState,
       [event.target.name]: event.target.value,
     }));
@@ -97,7 +93,7 @@ const NewEventModal = ({
   // Handles Invitee Change
   const onInviteeChange = (event: ChangeEvent<HtmlInputElement>) => {
     const newInviteeArray = event.target.value.split(',');
-    setWorkingFormData((prevState) => ({
+    setEventFormData((prevState) => ({
       ...prevState,
       invitees: newInviteeArray,
     }));
@@ -122,7 +118,7 @@ const NewEventModal = ({
     // If start time is before end time, store start time
     // Otherwise we push the end time back 30 minutes from start time
     if (isBefore(time, end)) {
-      setWorkingFormData((prevState) => ({
+      setEventFormData((prevState) => ({
         ...prevState,
         start: time,
       }));
@@ -130,7 +126,7 @@ const NewEventModal = ({
       // const duration = intervalToDuration({ start: time, end: end });
       const duration = { minutes: 30 };
       const endTime = add(time, duration);
-      setWorkingFormData((prevState) => ({
+      setEventFormData((prevState) => ({
         ...prevState,
         start: time,
         end: endTime,
@@ -147,29 +143,26 @@ const NewEventModal = ({
     if (isBefore(time, start)) {
       const duration = { minutes: -30 };
       const startTime = add(time, duration);
-      setWorkingFormData((prevState) => ({
+      setEventFormData((prevState) => ({
         ...prevState,
         start: startTime,
         end: time,
       }));
     } else
-      setWorkingFormData((prevState) => ({
+      setEventFormData((prevState) => ({
         ...prevState,
         end: time,
       }));
   };
 
-  // useEffect(()=>{
+  // const onSave = (e: MouseEvent<HTMLButtonElement>) => {
+  //   console.log(workingFormData);
+  //   setEventFormData(workingFormData);
   //   console.log(eventFormData);
-  // },[eventFormData])
-  const onSave = (e: MouseEvent<HTMLButtonElement>) => {
-    console.log(workingFormData);
-    setEventFormData(workingFormData);
-    console.log(eventFormData);
-    onAddEvent(e);
-    // setWorkingEvent(initialEventFormState);
-  };
+  //   onAddEvent(e);
+  // };
 
+  // Was seeing if there's an event emitted/action to take when the modal transition fires (there doesn't seem to be)
   const enterTest = (e) => {
     console.log(e);
     console.log('test');
@@ -178,7 +171,7 @@ const NewEventModal = ({
     <div>
       <Modal
         open={open}
-        // onTransitionEnter={console.log(workingFormData)}
+        // onTransitionEnter={}
         onClose={onClose}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
@@ -191,7 +184,7 @@ const NewEventModal = ({
             <LocalizationProvider dateAdapter={AdapterDateFns}>
               <TextField
                 name="title"
-                value={workingFormData.title}
+                value={title}
                 margin="dense"
                 id="title"
                 label="Title"
@@ -202,7 +195,7 @@ const NewEventModal = ({
               />
               <TextField
                 name="description"
-                value={workingFormData.description}
+                value={description}
                 margin="dense"
                 id="description"
                 label="Description"
@@ -216,7 +209,7 @@ const NewEventModal = ({
               />
               <TextField
                 name="invitees"
-                value={workingFormData.invitees}
+                value={invitees}
                 margin="dense"
                 id="invitees"
                 label="Invitees - Separate by comma"
@@ -247,7 +240,7 @@ const NewEventModal = ({
               <TimeField
                 name="startTime"
                 sx={formStyle}
-                value={workingFormData.start}
+                value={start}
                 margin="dense"
                 id="startTime"
                 label="Start Time"
@@ -257,7 +250,7 @@ const NewEventModal = ({
               <TimeField
                 name="endTime"
                 sx={formStyle}
-                value={workingFormData.end}
+                value={end}
                 margin="dense"
                 id="endTime"
                 label="End Time"
@@ -267,7 +260,7 @@ const NewEventModal = ({
               <DatePicker
                 sx={formStyle}
                 name="startDate"
-                value={workingFormData.start}
+                value={start}
                 label="Start Date"
                 onChange={onStartTimeChange}
                 // variant="outlined"
@@ -275,7 +268,7 @@ const NewEventModal = ({
               <DatePicker
                 sx={formStyle}
                 name="endDate"
-                value={workingFormData.end}
+                value={end}
                 label="End Date"
                 onChange={onEndTimeChange}
                 // variant="outlined"
@@ -293,7 +286,7 @@ const NewEventModal = ({
               /> */}
               <p></p>
             </LocalizationProvider>
-            <Button variant="contained" onClick={onSave}>
+            <Button variant="contained" onClick={onAddEvent}>
               Save Event
             </Button>
             <Button color="error" onClick={onDeleteEvent}>
