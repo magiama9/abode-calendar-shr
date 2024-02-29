@@ -1,73 +1,78 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Welcome to Abode Calendar
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This is a simple proof-of-concept app built for AbodeHR. The associated requirements document is here in the repo, but main requirements will be duplicated here. At its core, this is a simple CRUD calendar app with user notifications. In this README you will find the basic design principles, an overview of the technologies used, and a roadmap for improvement.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+# Getting Started
 
-## Description
+First, clone the repo
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Installation
-
-```bash
-$ npm install
+```
+git clone https://github.com/magiama9/abode-calendar-shr.git
 ```
 
-## Running the app
+Then install the dependencies. From root directory run
 
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+```
+cd public && npm i
 ```
 
-## Test
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+```
+cd src && npm i
 ```
 
-## Support
+Next we need to make sure we have a mongoDB instance running. If you don't have a mongodb installed, you can install and run it with Brew (on MacOS). Otherwise you can download it from [MongoDB](https://www.mongodb.com/docs/manual/installation/).
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```
+brew tap mongodb/brew
+brew install mongodb-community@7.0
+brew services start mongodb-community@7.0
+```
 
-## Stay in touch
+Create a .env file in the root directory of your project and add `DATABASE_URL = mongodb://127.0.0.1:27017/abode-calendar-shr`. Change the port to whatever your instance of mongodb is using (27017 is the default)
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+Now let's get up and running. From the root of the project, run `cd public && npm run dev` and in a new terminal run `cd src && npm run start -- -b swc`
 
-## License
+In your browser, navigate to "http://localhost:5173" to view the running project.
 
-Nest is [MIT licensed](LICENSE).
+# Functionality
+
+## Front End
+
+After "signing in" (enter anything you want, it's not even validated as an email address), users are shown their calendar with all events which they have either created or are an invitee for.
+
+By selecting events, or clicking/dragging on the calendar, users are able to:
+
+- Add Events
+- View Event Details
+- Delete Events
+- Reschedule Events
+
+The front end is written in React, and uses [react-big-calendar](https://github.com/jquense/react-big-calendar) as the base for the calendar functionality.
+
+Note: currently the modal/form implementation is wonky and I recognize that. The parent component (which is the calendar) is re-rendering every time the form data changes, which is ...less than ideal. You'll note that especially with a large number of events on the calendar, the site bogs down when editing the form. I need to either convert to a global state store (redux or zustand) or write a custom state hook to prevent this.
+
+## Back End
+
+The back end is running on Node/Nest. The database (as you've already seen) is MongoDB which contains a collection for event data as well as job data for the notification system.
+
+The API is set up to very basically handle requests. There's currently no authentication and very little validation/sanitization on routes, so have fun manipulating requests to do weird things and break it.
+
+## Notifications
+
+Notifications are sent as dummy emails using [nodemailer](https://nodemailer.com/). [Agenda](https://github.com/agenda/agenda) is used to schedule jobs that run a nodemailer function. Currently the emails are sent using [Ethereal Email](https://ethereal.email/). You can log in to my dummy mailbox using the credentials in `/src/notifications/nodeMailer.ts` or you can generate a new Ethereal Email. Just don't forget to update the credentials.
+
+Currently, jobs are scheduled to run 30 minutes before the meeting time is scheduled, as long as that time is some time in the future. If you create an event in the past, a job _ shouldn't _ be scheduled to run. If you delete an event, the associated notification job is deleted as well. If you update an event, we first delete the old job and then create a new job for the updated time. There's no limit on how many jobs can be stored in the database, but I believe the default limit for Agenda is 20 concurrent (running concurrently, not scheduled) jobs if you want to try and break it.
+
+## Design Choices
+
+There are several areas where I made choices to speed up development and sacrifice things I would normally do on a production ready app.
+
+The most glaring omission in my mind is authentication. Both the front end and the back end definitely need some sort of authorization system. As it is, you can view and edit any calendar you want just by changing the url or writing requests to the server.
+
+As I mentioned in the front end section, there's also an issue with how I'm storing state on the form component which is causing unnecessary re-renders of the calendar component on form state change. This is something that can be easily fixed, but the core functionality is working currently, so I haven't fixed it yet.
+
+Scalability of the architecture isn't terrible, but could definitely be improved. Currently, when a user views their events, the database is querying all events to find a match on a nested property within the collection. This is fast with a relatively small number of events, but can slow down considerably as the collection size increases. As an improvement, there should probably be a `user` collection that stores events or eventIds on it.
+
+Another notable improvement would be to only fetch events for the current view range of the calendar. Currently when a user logs in, it pulls all of their events. Instead, we should essentially lazy load only the events that would be in view at a particular time.
+
+In terms of overall code quality, there's definitely improvement to be made on the typings. Types are currently very inconsistently applied, and are even sometimes conflicting(yay!). Any halfway decent build pipeline would chuck this thing right out the door. But right now it runs in dev, and that's what I care about.
