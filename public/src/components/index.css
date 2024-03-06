@@ -1,0 +1,123 @@
+/* .rbc-header {
+    color: white;
+    font-size: 14px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 36px !important;
+    background: #17405d;
+  }
+  
+  .rbc-allday-cell {
+    display: none;
+  }
+  
+  .rbc-time-slot {
+    color: #74a4c3;
+    z-index: 1;
+  }
+  
+  .rbc-time-slot:not(.rbc-today .rbc-time-slot) {
+    background-color: #eff4f7;
+  }
+  
+  /*Event Styles*/
+/* .rbc-event,
+  .rbc-background-event {
+    z-index: 2;
+    padding: 0px !important;
+    border: none !important;
+  }
+  
+  .rbc-event-label {
+    display: none !important;
+  }
+  
+  .rbc-events-container {
+    width: 100% !important;
+  }
+  
+  /*Timeslots Customization*/
+/* .rbc-day-slot .rbc-time-slot:after {
+    content: "";
+    width: 100%;
+    border-top: 1px solid #fbb3ec;
+    display: block;
+  } */
+
+html,
+body {
+  background-color: #f3ece6;
+}
+.rbc-calendar {
+  background-color: #f3ece6;
+}
+
+.rbc-toolbar-label,
+.rbc-header,
+.rbc-label,
+.rbc-event-label,
+.rbc-event-content,
+.rbc-btn-group,
+.rbc-agenda-date-cell,
+.rbc-agenda-time-cell,
+.rbc-agenda-event-cell,
+.rbc-agenda-empty,
+button {
+  font-family: Inter;
+}
+
+.rbc-toolbar-label {
+  font-weight: bold;
+  color: #0f4e32;
+}
+
+.rbc-label {
+  color: #0f4e32;
+}
+
+.rbc-header {
+  font-weight: normal;
+  color: #0f4e32;
+}
+.rbc-toolbar button {
+  color: #0f4e32;
+  border: 1px solid #0f4e32;
+}
+
+.rbc-toolbar button:hover {
+  background-color: #0f4e32;
+  color: #ffb71b;
+  cursor: pointer;
+}
+.rbc-toolbar button.rbc-active {
+  background-color: #0f4e32 !important;
+  color: #dbd4cf;
+  font-weight: bold;
+}
+
+button.rbc-active:hover {
+  color: #ffb71b !important;
+}
+
+.rbc-agenda-date-cell,
+.rbc-agenda-time-cell,
+.rbc-agenda-event-cell {
+  font-size: 14px;
+}
+
+.rbc-event {
+  background-color: #0f4e32;
+}
+
+.rbc-time-header-cell .rbc-today {
+  background-color: #ffb71b !important;
+}
+
+.rbc-today {
+  background-color: #dbd4cf;
+}
+
+.rbc-current-time-indicator {
+  background-color: #f06424;
+}

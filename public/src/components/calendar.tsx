@@ -30,6 +30,7 @@ import { deleteEvent } from '../utils/deleteEvent';
 
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
+import './index.css';
 
 export interface EventFormData {
   title: string;
@@ -82,6 +83,8 @@ const Cal: FC = () => {
     end,
   });
 
+  const [date, setDate] = useState(new Date()); // Used for controlling the view of the calendar
+  const [scrollToTime, setScrollToTime] = useState(new Date()); // Used for controlling the initial time displayed on the calendar
   const [isNew, setIsNew] = useState(false); // For managing if event is new or updating current event
   const [openSlot, setOpenSlot] = useState(false); // For managing modal state
 
@@ -254,6 +257,8 @@ const Cal: FC = () => {
       start: start,
       end: end,
     }));
+    setScrollToTime(start);
+    setDate(start);
     setOpenSlot(true);
   };
 
@@ -303,32 +308,45 @@ const Cal: FC = () => {
     setEvents(newEvents);
   };
 
+  // Sets the current date range when we navigate so that calendar doesn't reset to default date on creating/updating/deleting events
+  // Resets the scrollToTime (earliest time displayed on the calendar) to 9 AM.
+  const onNavigate = useCallback(
+    (newDate) => {
+      setDate(newDate);
+      setScrollToTime(new Date().setHours(9));
+    },
+    [setDate],
+  );
+
   return (
     <div>
       {/* <TestFormData.Provider value="test"> */}
-        <DnDCalendar
-          components={{ toolbar: InitialRangeChangeToolbar }}
-          defaultView="week"
-          events={events}
-          localizer={localizer}
-          onSelectEvent={handleSelectEvent}
-          onSelectSlot={handleSelectSlot}
-          onView={onView}
-          view={view}
-          onEventDrop={onEventDrop}
-          onEventResize={onEventResize}
-          selectable
-          resizable
-          style={{ height: '100vh' }}
-        />
-        <NewEventModal
-          open={openSlot}
-          handleClose={handleClose}
-          eventFormData={eventFormData}
-          setEventFormData={setEventFormData}
-          onAddEvent={addNewEvent}
-          onDeleteEvent={onDeleteEvent}
-        />
+      <DnDCalendar
+        // components={{ toolbar: InitialRangeChangeToolbar }}
+        defaultView="week"
+        defaultDate={date}
+        onNavigate={onNavigate}
+        scrollToTime={scrollToTime}
+        events={events}
+        localizer={localizer}
+        onSelectEvent={handleSelectEvent}
+        onSelectSlot={handleSelectSlot}
+        onView={onView}
+        view={view}
+        onEventDrop={onEventDrop}
+        onEventResize={onEventResize}
+        selectable
+        resizable
+        style={{ height: '99vh' }} // at 100 vh you can slightly scroll the top bar out of view
+      />
+      <NewEventModal
+        open={openSlot}
+        handleClose={handleClose}
+        eventFormData={eventFormData}
+        setEventFormData={setEventFormData}
+        onAddEvent={addNewEvent}
+        onDeleteEvent={onDeleteEvent}
+      />
       {/* </TestFormData.Provider> */}
     </div>
   );
