@@ -336,7 +336,12 @@ const Cal: FC = () => {
             // When the range is a single day, rbc only returns the start of the day. This uses date-fns to create a new date object for the end of the day
           ]);
         } else {
-          setDateRange([newRange[0], newRange[6]]);
+          // For some unknown reason, when you change to the week view, rbc returns the end of the week as the start of the day, not the end of the day
+          // This makes sure that when you change from week view (where dateRange is calculated properly on calendar load) to another view and then back, you don't lose Saturday events
+          setDateRange([
+            newRange[0],
+            add(newRange[6], { hours: 23, minutes: 59, seconds: 59 }),
+          ]);
         }
       } else {
         setDateRange([newRange.start, newRange.end]);
