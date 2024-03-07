@@ -1,4 +1,5 @@
-const nodemailer = require('nodemailer');
+// const nodemailer = require('nodemailer');
+import nodemailer from 'nodemailer';
 
 const transporter = nodemailer.createTransport({
   host: 'smtp.ethereal.email',
@@ -11,7 +12,6 @@ const transporter = nodemailer.createTransport({
 
 // async..await is not allowed in global scope, must use a wrapper
 export default async function main(eventObject) {
-
   // Stores valid emails
   const validEmails = [];
 
