@@ -78,8 +78,57 @@ As I mentioned in the front end section, there's also an issue with how I'm stor
 
 Scalability of the architecture isn't terrible, but could definitely be improved. Currently, when a user views their events, the database is querying all events to find a match on a nested property within the collection. This is fast with a relatively small number of events, but can slow down considerably as the collection size increases. As an improvement, there should probably be a `user` collection that stores events or eventIds on it.
 
-~Another notable improvement would be to only fetch events for the current view range of the calendar. Currently when a user logs in, it pulls all of their events. Instead, we should essentially lazy load only the events that would be in view at a particular time.~ *Feature Implemented*
-
 In terms of overall code quality, there's definitely improvement to be made on the typings. Types are currently very inconsistently applied, and are even sometimes conflicting(yay!). Any halfway decent build pipeline would chuck this thing right out the door. But right now it runs in dev, and that's what I care about.
 
 Testing is also currently non-existent. Given more time, I would have liked to increase the testing coverage from 0% to at least 75%(hey, we can't be perfect, right?).
+
+# Roadmap For Improvement
+
+- Form improvements
+
+    - Fix calendar component re-render on form changes _HIGH PRIORITY_
+    - Change invitees from a comma separated list into an input with a button to add a new invitee
+    - Style the form more consistently with the rest of the app (stop using MaterialUI components, probably) _LOW PRIORITY_
+
+- Authentication & authorization _HIGH PRIORITY_
+
+  - Authenticate users & allow true login functionality
+  - Require authorization on back-end routes
+
+- ~Load only events in view~ _FINISHED_
+
+- Change event deletion behavior to better model real-life use case
+
+  - If the creator of the event deletes it, delete it for everyone
+  - If an invitee of the event deletes it, delete it only for them
+
+- Change event update behavior (?)
+
+  - Add button to discard changes on event(essentially duplicate functionality of clicking outside the modal, without actually closing the modal) (?)
+  - If an event is modified, send a notification to all the other participants about the change and the new event (?)
+  - Only allow event creator to edit the event (?)
+  - Only allow event creator to remove invitees, but allow all participants to add invitees (?)
+
+- Handle all-day event creation from week view/dropping events into the all-day section from day/week view
+
+- Allow sub calendars for a user, e.g. work & school, and allow users to selectively display some or all of the calendars they have
+
+- Event styling (possible choices) _LOW PRIORITY_
+
+  - Default to one color for events you've created and another color for events someone has invited you to
+  - Allow custom colors for events or for event categories
+
+- Calendar theming _LOW PRIORITY_
+
+  - Allow users to change color scheme/theme of calendar
+
+- Increase testing coverage
+
+  - Unit & integration tests for basic CRUD functionality on the back end
+  - E2E testing coverage for basic use cases
+
+- Increase type coverage & uniformity
+  - Increase consistency between typings on the front and back end
+  - Increase type coverage, especially on the front end
+
+- Clean up unused files, methods, and dependencies _LOW PRIORITY_
