@@ -2,6 +2,9 @@
 
 This is a simple proof-of-concept app built for AbodeHR. The associated requirements document is here in the repo. At its core, this is a simple CRUD calendar app with user notifications. In this README you will find the basic design principles, an overview of the technologies used, and a roadmap for improvement.
 
+![Demo Calendar Image](https://github.com/magiama9/abode-calendar-shr/blob/post-submit/documents/abode-calendar-shr-demo-styled.png)
+![Demo Modal Image](https://github.com/magiama9/abode-calendar-shr/blob/post-submit/documents/abode-calendar-shr-demo-styled-modal.png)
+
 # Getting Started
 
 First, clone the repo
@@ -61,7 +64,7 @@ The API is set up to very basically handle requests. There's currently no authen
 
 Notifications are sent as dummy emails using [nodemailer](https://nodemailer.com/). [Agenda](https://github.com/agenda/agenda) is used to schedule jobs that run a nodemailer function. Currently the emails are sent using [Ethereal Email](https://ethereal.email/). You can log in to my dummy mailbox using the credentials in `/src/notifications/nodeMailer.ts` or you can generate a new Ethereal Email. Just don't forget to update the credentials.
 
-Currently, jobs are scheduled to run 30 minutes before the meeting time is scheduled, as long as that time is some time in the future. If you create an event in the past, a job *shouldn't* be scheduled to run. If you delete an event, the associated notification job is deleted as well. If you update an event, we first delete the old job and then create a new job for the updated time. There's no limit on how many jobs can be stored in the database, but I believe the default limit for Agenda is 20 concurrent (running concurrently, not scheduled) jobs if you want to try and break it.
+Currently, jobs are scheduled to run 30 minutes before the meeting time is scheduled, as long as that time is some time in the future. If you create an event in the past, a job _shouldn't_ be scheduled to run. If you delete an event, the associated notification job is deleted as well. If you update an event, we first delete the old job and then create a new job for the updated time. There's no limit on how many jobs can be stored in the database, but I believe the default limit for Agenda is 20 concurrent (running concurrently, not scheduled) jobs if you want to try and break it.
 
 # Design Choices
 
