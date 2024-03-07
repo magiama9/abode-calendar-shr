@@ -49,7 +49,7 @@ By selecting events, or clicking/dragging on the calendar, users are able to:
 
 The front end is written in React, and uses [react-big-calendar](https://github.com/jquense/react-big-calendar) as the base for the calendar functionality.
 
-Note: currently the modal/form implementation is wonky and I recognize that. The parent component (which is the calendar) is re-rendering every time the form data changes, which is ...less than ideal. You'll note that especially with a large number of events on the calendar, the site bogs down when editing the form. I need to either convert to a global state store (redux or zustand) or write a custom state hook to prevent this.
+Note: currently the modal/form implementation is wonky and I recognize that. The parent component (which is the calendar) is re-rendering every time the form data changes, which is ...less than ideal. You'll note that especially with a large number of events on the calendar, the site bogs down when editing the form.
 
 ## Back End
 
@@ -61,15 +61,15 @@ The API is set up to very basically handle requests. There's currently no authen
 
 Notifications are sent as dummy emails using [nodemailer](https://nodemailer.com/). [Agenda](https://github.com/agenda/agenda) is used to schedule jobs that run a nodemailer function. Currently the emails are sent using [Ethereal Email](https://ethereal.email/). You can log in to my dummy mailbox using the credentials in `/src/notifications/nodeMailer.ts` or you can generate a new Ethereal Email. Just don't forget to update the credentials.
 
-Currently, jobs are scheduled to run 30 minutes before the meeting time is scheduled, as long as that time is some time in the future. If you create an event in the past, a job _ shouldn't _ be scheduled to run. If you delete an event, the associated notification job is deleted as well. If you update an event, we first delete the old job and then create a new job for the updated time. There's no limit on how many jobs can be stored in the database, but I believe the default limit for Agenda is 20 concurrent (running concurrently, not scheduled) jobs if you want to try and break it.
+Currently, jobs are scheduled to run 30 minutes before the meeting time is scheduled, as long as that time is some time in the future. If you create an event in the past, a job *shouldn't* be scheduled to run. If you delete an event, the associated notification job is deleted as well. If you update an event, we first delete the old job and then create a new job for the updated time. There's no limit on how many jobs can be stored in the database, but I believe the default limit for Agenda is 20 concurrent (running concurrently, not scheduled) jobs if you want to try and break it.
 
-## Design Choices
+# Design Choices
 
 There are several areas where I made choices to speed up development and sacrifice things I would normally do on a production ready app.
 
 The most glaring omission in my mind is authentication. Both the front end and the back end definitely need some sort of authorization system. As it is, you can view and edit any calendar you want just by changing the url or writing requests to the server.
 
-As I mentioned in the front end section, there's also an issue with how I'm storing state on the form component which is causing unnecessary re-renders of the calendar component on form state change. This is something that can be easily fixed, but the core functionality is working currently, so I haven't fixed it yet. Another front end noticeable omission is decent responsiveness and accessibility (not to mention making it look a little less gnarly). Those issues are easily fixable and don't detract from the core functionality currently.
+As I mentioned in the front end section, there's also an issue with how I'm storing state on the form component which is causing unnecessary re-renders of the calendar component on form state change. This is something that can be easily fixed, but the core functionality is working currently, so I haven't fixed it yet. Another front end noticeable omission is decent responsiveness and accessibility. Those issues are easily fixable and don't detract from the core functionality currently.
 
 Scalability of the architecture isn't terrible, but could definitely be improved. Currently, when a user views their events, the database is querying all events to find a match on a nested property within the collection. This is fast with a relatively small number of events, but can slow down considerably as the collection size increases. As an improvement, there should probably be a `user` collection that stores events or eventIds on it.
 
