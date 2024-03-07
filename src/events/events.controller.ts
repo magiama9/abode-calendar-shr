@@ -69,7 +69,6 @@ export class EventsController {
     if (!newEvent) {
       throw new NotFoundException('Event was not created.');
     } else {
-
       // Get the time 30 minutes before the event
       // If that time is before now, we don't send a notification
       // Without this, if you schedule an agenda job for a time before now, it runs on instantiation
@@ -120,7 +119,6 @@ export class EventsController {
 
       const notificationTime = sub(updatedEvent.start, { minutes: 30 });
       if (!isPast(notificationTime)) {
-        // console.log('event is in the future');
         await agenda.schedule(
           notificationTime,
           'Add Notification',
