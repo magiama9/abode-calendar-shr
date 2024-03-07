@@ -18,6 +18,7 @@ import parse from 'date-fns/parse';
 import startOfWeek from 'date-fns/startOfWeek';
 import getDay from 'date-fns/getDay';
 import enUS from 'date-fns/locale/en-US';
+import { add, endOfWeek } from 'date-fns';
 import addHours from 'date-fns/addHours';
 import startOfHour from 'date-fns/startOfHour';
 
@@ -119,13 +120,18 @@ const Cal: FC = () => {
     initialEventFormState,
   );
 
+  const [dateRange, setDateRange] = useState<Array<Date>>([
+    startOfWeek(now),
+    endOfWeek(now),
+  ]);
+
   // const TestFormData = createContext('test');
   // const test = useContext(TestFormData);
 
-  // Fires only (twice) on first component mount because of empty dependency array
-  // Basically functions as the hook version of componentDidMount()
+  // Fires on first component mount, and then again whenever dateRange changes
+  // Fetches all events from the db where the start of the event is within dateRange and userEmail matches
   useEffect(() => {
-    const promisedEvents = getAllEvents(path.userEmail);
+    const promisedEvents = getAllEvents(path.userEmail, dateRange);
     // Server returns start and end times as strings, they're converted into date objects to work with react-big-calendar
     promisedEvents.then((results) => {
       const dbEvents = results?.data.map((result: IEventInfo) => ({
@@ -139,11 +145,10 @@ const Cal: FC = () => {
 
       setEvents(dbEvents);
     });
-  }, []);
+  }, [dateRange]);
 
   //   Resets Event Form State and closes modal
   const handleClose = () => {
-    // console.log(eventFormData);
     setEventFormData(initialEventFormState);
     setCurrentEvent(initialEventFormState);
     setOpenSlot(false);
@@ -243,7 +248,6 @@ const Cal: FC = () => {
           _id: result?.data.event._id,
         };
         setEvents((prev) => [...prev, newEvent]);
-        // console.log(events);
       });
     }
 
@@ -318,6 +322,29 @@ const Cal: FC = () => {
     [setDate],
   );
 
+  // Gets the current range of start and end for the in view events and stores that range in state
+  // If the current view is Month or Agenda, react-big-calendar returns an object with a start and end property
+  // If the current view is Day or Week, react-big-calendar returns an array with length 1(Day) or length 7(Week)
+  // We should be able to access the current view from state, but it hasn't updated by the time this fires, so instead we have some weird logic
+  const onRangeChange = useCallback(
+    (newRange) => {
+      if (Array.isArray(newRange)) {
+        if (newRange.length == 1) {
+          setDateRange([
+            newRange[0],
+            add(newRange[0], { hours: 23, minutes: 59, seconds: 59 }),
+            // When the range is a single day, rbc only returns the start of the day. This uses date-fns to create a new date object for the end of the day
+          ]);
+        } else {
+          setDateRange([newRange[0], newRange[6]]);
+        }
+      } else {
+        setDateRange([newRange.start, newRange.end]);
+      }
+    },
+    [setDateRange],
+  );
+
   return (
     <div>
       {/* <TestFormData.Provider value="test"> */}
@@ -331,6 +358,7 @@ const Cal: FC = () => {
         localizer={localizer}
         onSelectEvent={handleSelectEvent}
         onSelectSlot={handleSelectSlot}
+        onRangeChange={onRangeChange}
         onView={onView}
         view={view}
         onEventDrop={onEventDrop}

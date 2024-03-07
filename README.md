@@ -50,6 +50,8 @@ By selecting events, or clicking/dragging on the calendar, users are able to:
 - Delete Events
 - Reschedule Events
 
+The calendar only loads events that are in view. When the view range changes, a new call is made to the server and the new events that start within that view are loaded in. This should result in a performance increase when a user has a large number of events on their calendar.
+
 The front end is written in React, and uses [react-big-calendar](https://github.com/jquense/react-big-calendar) as the base for the calendar functionality.
 
 Note: currently the modal/form implementation is wonky and I recognize that. The parent component (which is the calendar) is re-rendering every time the form data changes, which is ...less than ideal. You'll note that especially with a large number of events on the calendar, the site bogs down when editing the form.
@@ -76,7 +78,7 @@ As I mentioned in the front end section, there's also an issue with how I'm stor
 
 Scalability of the architecture isn't terrible, but could definitely be improved. Currently, when a user views their events, the database is querying all events to find a match on a nested property within the collection. This is fast with a relatively small number of events, but can slow down considerably as the collection size increases. As an improvement, there should probably be a `user` collection that stores events or eventIds on it.
 
-Another notable improvement would be to only fetch events for the current view range of the calendar. Currently when a user logs in, it pulls all of their events. Instead, we should essentially lazy load only the events that would be in view at a particular time.
+~Another notable improvement would be to only fetch events for the current view range of the calendar. Currently when a user logs in, it pulls all of their events. Instead, we should essentially lazy load only the events that would be in view at a particular time.~ *Feature Implemented*
 
 In terms of overall code quality, there's definitely improvement to be made on the typings. Types are currently very inconsistently applied, and are even sometimes conflicting(yay!). Any halfway decent build pipeline would chuck this thing right out the door. But right now it runs in dev, and that's what I care about.
 
