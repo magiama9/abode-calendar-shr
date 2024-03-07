@@ -9,7 +9,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 
-import './index.css'
+import './index.css';
 
 const LandingPage: FC = () => {
   const navigate = useNavigate();
@@ -17,15 +17,12 @@ const LandingPage: FC = () => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const userEmail = data.get('email');
-    // console.log({
-    //   email: data.get('email'),
-    // });
 
     const calendarUrl = '/calendar/' + userEmail;
     navigate(calendarUrl);
   };
   return (
-    <Container component="main" maxWidth="xs" sx={{bgcolor:"#f3ece6"}}>
+    <Container component="main" maxWidth="xs" sx={{ bgcolor: '#f3ece6' }}>
       <CssBaseline />
       <Box
         sx={{
@@ -42,7 +39,7 @@ const LandingPage: FC = () => {
           component="form"
           onSubmit={useHandleSubmit}
           noValidate
-          sx={{ mt: 1, border:"#0f4e32" }}
+          sx={{ mt: 1, border: '#0f4e32' }}
         >
           <TextField
             margin="normal"
@@ -53,14 +50,19 @@ const LandingPage: FC = () => {
             name="email"
             autoComplete="email"
             autoFocus
-            sx={{'&input:focus-visible':{backgroundColor:"#F06424"}}}
+            sx={{ '&input:focus-visible': { backgroundColor: '#F06424' } }}
           />
 
           <Button
             type="submit"
             fullWidth
             variant="contained"
-            sx={{ backgroundColor: "#0f4e32",mt: 3, mb: 2, '&:hover':{backgroundColor:"#F06424"} }}
+            sx={{
+              backgroundColor: '#0f4e32',
+              mt: 3,
+              mb: 2,
+              '&:hover': { backgroundColor: '#F06424' },
+            }}
           >
             Let's Go
           </Button>
