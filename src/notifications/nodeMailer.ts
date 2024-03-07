@@ -34,7 +34,6 @@ export default async function main(eventObject) {
     '</p>';
   // send mail with defined transport object
   if (sendToList.length > 0) {
-    console.log(sendToList);
     const info = await transporter.sendMail({
       from: '"Cron Overlord" <cron@overlord.com>', // sender address
       to: sendToList, // list of receivers
