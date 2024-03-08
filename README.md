@@ -2,8 +2,8 @@
 
 This is a simple proof-of-concept app built for AbodeHR. The associated requirements document is here in the repo. At its core, this is a simple CRUD calendar app with user notifications. In this README you will find the basic design principles, an overview of the technologies used, and a roadmap for improvement.
 
-![Demo Calendar Image](https://github.com/magiama9/abode-calendar-shr/blob/post-submit/documents/abode-calendar-shr-demo-styled.png)
-![Demo Modal Image](https://github.com/magiama9/abode-calendar-shr/blob/post-submit/documents/abode-calendar-shr-demo-styled-modal.png)
+![Demo Calendar Image](https://github.com/magiama9/abode-calendar-shr/blob/master/documents/abode-calendar-shr-demo-styled.png)
+![Demo Modal Image](https://github.com/magiama9/abode-calendar-shr/blob/master/documents/abode-calendar-shr-demo-styled-modal.png)
 
 # Getting Started
 
