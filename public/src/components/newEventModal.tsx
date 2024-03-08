@@ -27,10 +27,11 @@ const style = {
   left: '50%',
   transform: 'translate(-50%, -50%)',
   width: 400,
-  bgcolor: 'background.paper',
-  border: '2px solid #000',
+  bgcolor: '#dbd4cf',
+  border: '2px solid #0f4e32',
   boxShadow: 24,
   p: 4,
+  font: 'Inter',
 };
 
 const formStyle = {
@@ -91,11 +92,17 @@ const NewEventModal = ({
   // This is inelegant and easily breakable, but it works for now.
 
   // Handles Invitee Change
-  const onInviteeChange = (event: ChangeEvent<HtmlInputElement>) => {
+  const onInviteeChange = (event: ChangeEvent<HTMLInputElement>) => {
+    // Essentially disables leading or trailing whitespace(and also the spacebar, essentially) in the event form
+    // Whitespace is trimmed because "   test@test.com" is a different user than "test@test.com" otherwise
+    // Probably more elegant to strip the whitespace on the db save, but this works for now and makes my life easy
     const newInviteeArray = event.target.value.split(',');
+    const trimmedInvitees = newInviteeArray.map((invitee) => {
+      return invitee.trim();
+    });
     setEventFormData((prevState) => ({
       ...prevState,
-      invitees: newInviteeArray,
+      invitees: trimmedInvitees,
     }));
   };
 
@@ -286,10 +293,14 @@ const NewEventModal = ({
               /> */}
               <p></p>
             </LocalizationProvider>
-            <Button variant="contained" onClick={onAddEvent}>
+            <Button
+              sx={{ bgcolor: '#0f4e32' }}
+              variant="contained"
+              onClick={onAddEvent}
+            >
               Save Event
             </Button>
-            <Button color="error" onClick={onDeleteEvent}>
+            <Button sx={{ color: '#f06424' }} onClick={onDeleteEvent}>
               Delete Event
             </Button>
           </Box>

@@ -22,9 +22,16 @@ export class EventsService {
   }
 
   // Finds all events which a given user email is either the creator or an invitee
-  async findAllByEmail(userEmail): Promise<Array<Event>> {
+  async findAllByEmail(userEmail, dateRange): Promise<Array<Event>> {
     const allEventsByUser = await this.eventModel
-      .find({ $or: [{ createdBy: userEmail }, { invitees: userEmail }] })
+      .find({
+        $and: [
+          {
+            start: { $gte: dateRange.startOfRange, $lt: dateRange.endOfRange },
+          },
+          { $or: [{ createdBy: userEmail }, { invitees: userEmail }] },
+        ],
+      })
       .exec();
     return allEventsByUser;
   }

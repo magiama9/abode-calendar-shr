@@ -5,6 +5,7 @@ import {
   Body,
   Patch,
   Param,
+  Query,
   Delete,
   Res,
   HttpStatus,
@@ -47,12 +48,17 @@ export class EventsController {
 
   // Finds the user's events
   @Get('user/:userEmail')
-  async findAll(@Res() res, @Param('userEmail') userEmail: string) {
-    const events = await this.eventsService.findAllByEmail(userEmail);
+  async findAll(
+    @Res() res,
+    @Param('userEmail') userEmail: string,
+    @Query('startOfRange') startOfRange: Date,
+    @Query('endOfRange') endOfRange: Date,
+  ) {
+    const events = await this.eventsService.findAllByEmail(userEmail, {
+      startOfRange: startOfRange,
+      endOfRange: endOfRange,
+    });
     await agenda.start();
-    // await agenda.every('10 seconds =', 'Add Notification', {
-    //   userEmail: userEmail,
-    // });
     return res.status(HttpStatus.OK).json(events);
   }
 
@@ -63,8 +69,6 @@ export class EventsController {
     if (!newEvent) {
       throw new NotFoundException('Event was not created.');
     } else {
-      // await agenda.start();
-
       // Get the time 30 minutes before the event
       // If that time is before now, we don't send a notification
       // Without this, if you schedule an agenda job for a time before now, it runs on instantiation
@@ -73,7 +77,6 @@ export class EventsController {
       const notificationTime = sub(newEvent.start, { minutes: 30 });
 
       if (!isPast(notificationTime)) {
-        // console.log('event is in the future');
         await agenda.schedule(notificationTime, 'Add Notification', newEvent);
       }
       return res.status(HttpStatus.OK).json({
@@ -116,7 +119,6 @@ export class EventsController {
 
       const notificationTime = sub(updatedEvent.start, { minutes: 30 });
       if (!isPast(notificationTime)) {
-        // console.log('event is in the future');
         await agenda.schedule(
           notificationTime,
           'Add Notification',

@@ -18,6 +18,7 @@ import parse from 'date-fns/parse';
 import startOfWeek from 'date-fns/startOfWeek';
 import getDay from 'date-fns/getDay';
 import enUS from 'date-fns/locale/en-US';
+import { add, endOfWeek } from 'date-fns';
 import addHours from 'date-fns/addHours';
 import startOfHour from 'date-fns/startOfHour';
 
@@ -30,6 +31,7 @@ import { deleteEvent } from '../utils/deleteEvent';
 
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
+import './index.css';
 
 export interface EventFormData {
   title: string;
@@ -82,6 +84,8 @@ const Cal: FC = () => {
     end,
   });
 
+  const [date, setDate] = useState(new Date()); // Used for controlling the view of the calendar
+  const [scrollToTime, setScrollToTime] = useState(new Date()); // Used for controlling the initial time displayed on the calendar
   const [isNew, setIsNew] = useState(false); // For managing if event is new or updating current event
   const [openSlot, setOpenSlot] = useState(false); // For managing modal state
 
@@ -116,13 +120,18 @@ const Cal: FC = () => {
     initialEventFormState,
   );
 
+  const [dateRange, setDateRange] = useState<Array<Date>>([
+    startOfWeek(now),
+    endOfWeek(now),
+  ]);
+
   // const TestFormData = createContext('test');
   // const test = useContext(TestFormData);
 
-  // Fires only (twice) on first component mount because of empty dependency array
-  // Basically functions as the hook version of componentDidMount()
+  // Fires on first component mount, and then again whenever dateRange changes
+  // Fetches all events from the db where the start of the event is within dateRange and userEmail matches
   useEffect(() => {
-    const promisedEvents = getAllEvents(path.userEmail);
+    const promisedEvents = getAllEvents(path.userEmail, dateRange);
     // Server returns start and end times as strings, they're converted into date objects to work with react-big-calendar
     promisedEvents.then((results) => {
       const dbEvents = results?.data.map((result: IEventInfo) => ({
@@ -136,11 +145,10 @@ const Cal: FC = () => {
 
       setEvents(dbEvents);
     });
-  }, []);
+  }, [dateRange]);
 
   //   Resets Event Form State and closes modal
   const handleClose = () => {
-    // console.log(eventFormData);
     setEventFormData(initialEventFormState);
     setCurrentEvent(initialEventFormState);
     setOpenSlot(false);
@@ -240,7 +248,6 @@ const Cal: FC = () => {
           _id: result?.data.event._id,
         };
         setEvents((prev) => [...prev, newEvent]);
-        // console.log(events);
       });
     }
 
@@ -254,6 +261,8 @@ const Cal: FC = () => {
       start: start,
       end: end,
     }));
+    setScrollToTime(start);
+    setDate(start);
     setOpenSlot(true);
   };
 
@@ -303,32 +312,74 @@ const Cal: FC = () => {
     setEvents(newEvents);
   };
 
+  // Sets the current date range when we navigate so that calendar doesn't reset to default date on creating/updating/deleting events
+  // Resets the scrollToTime (earliest time displayed on the calendar) to 9 AM.
+  const onNavigate = useCallback(
+    (newDate) => {
+      setDate(newDate);
+      setScrollToTime(new Date().setHours(9));
+    },
+    [setDate],
+  );
+
+  // Gets the current range of start and end for the in view events and stores that range in state
+  // If the current view is Month or Agenda, react-big-calendar returns an object with a start and end property
+  // If the current view is Day or Week, react-big-calendar returns an array with length 1(Day) or length 7(Week)
+  // We should be able to access the current view from state, but it hasn't updated by the time this fires, so instead we have some weird logic
+  const onRangeChange = useCallback(
+    (newRange) => {
+      if (Array.isArray(newRange)) {
+        if (newRange.length == 1) {
+          setDateRange([
+            newRange[0],
+            add(newRange[0], { hours: 23, minutes: 59, seconds: 59 }),
+            // When the range is a single day, rbc only returns the start of the day. This uses date-fns to create a new date object for the end of the day
+          ]);
+        } else {
+          // For some unknown reason, when you change to the week view, rbc returns the end of the week as the start of the day, not the end of the day
+          // This makes sure that when you change from week view (where dateRange is calculated properly on calendar load) to another view and then back, you don't lose Saturday events
+          setDateRange([
+            newRange[0],
+            add(newRange[6], { hours: 23, minutes: 59, seconds: 59 }),
+          ]);
+        }
+      } else {
+        setDateRange([newRange.start, newRange.end]);
+      }
+    },
+    [setDateRange],
+  );
+
   return (
     <div>
       {/* <TestFormData.Provider value="test"> */}
-        <DnDCalendar
-          components={{ toolbar: InitialRangeChangeToolbar }}
-          defaultView="week"
-          events={events}
-          localizer={localizer}
-          onSelectEvent={handleSelectEvent}
-          onSelectSlot={handleSelectSlot}
-          onView={onView}
-          view={view}
-          onEventDrop={onEventDrop}
-          onEventResize={onEventResize}
-          selectable
-          resizable
-          style={{ height: '100vh' }}
-        />
-        <NewEventModal
-          open={openSlot}
-          handleClose={handleClose}
-          eventFormData={eventFormData}
-          setEventFormData={setEventFormData}
-          onAddEvent={addNewEvent}
-          onDeleteEvent={onDeleteEvent}
-        />
+      <DnDCalendar
+        // components={{ toolbar: InitialRangeChangeToolbar }}
+        defaultView="week"
+        defaultDate={date}
+        onNavigate={onNavigate}
+        scrollToTime={scrollToTime}
+        events={events}
+        localizer={localizer}
+        onSelectEvent={handleSelectEvent}
+        onSelectSlot={handleSelectSlot}
+        onRangeChange={onRangeChange}
+        onView={onView}
+        view={view}
+        onEventDrop={onEventDrop}
+        onEventResize={onEventResize}
+        selectable
+        resizable
+        style={{ height: '99vh' }} // at 100 vh you can slightly scroll the top bar out of view
+      />
+      <NewEventModal
+        open={openSlot}
+        handleClose={handleClose}
+        eventFormData={eventFormData}
+        setEventFormData={setEventFormData}
+        onAddEvent={addNewEvent}
+        onDeleteEvent={onDeleteEvent}
+      />
       {/* </TestFormData.Provider> */}
     </div>
   );
